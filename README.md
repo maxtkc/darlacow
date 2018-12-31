@@ -1,6 +1,4 @@
-%Darla the Cow
-
-[![yay](https://img.shields.io/badge/cow-moo-ffffff.svg)](file:///home/max/Downloads/Cow_Moo-Mike_Koenig-42670858.mp3)
+[![yay](https://img.shields.io/badge/cow-moo-ffffff.svg)](http://www.orangefreesounds.com/wp-content/uploads/2016/09/Cow-mooing-loudly.mp3?_=1)
 
 # Darla the Cow
 
