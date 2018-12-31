@@ -49,7 +49,7 @@ How to build and install required software from scratch.
   - Clone the repo and `cd` into it
   - `cargo build --target=armv7-unknown-linux-gnueabihf`
   - Copy the files over
-    - `scp -r static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@<ip>:~`
+    - `scp -r templates static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@<ip>:~`
   - `ssh` to server and test run
 - Make it automatically run every time
   - `sudo vim /etc/rc.local`

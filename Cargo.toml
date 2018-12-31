@@ -5,3 +5,16 @@ authors = ["maxtkc <maxkatzchristy@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+rocket = "0.4"
+serde = "1.0"
+serde_json = "1.0"
+
+[dependencies.rocket_contrib]
+default-features = false
+features = ["serve", "tera_templates"]
+version = "0.4"
+
+[dependencies.rusqlite]
+version = "0.16"
+default-features = false
+features = ["bundled"]
