@@ -10,6 +10,30 @@ use rocket::Request;
 
 use std::collections::HashMap;
 
+#[get("/")]
+fn play() -> Template {
+    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    Template::render("play", &map)
+}
+
+#[get("/edit")]
+fn edit() -> Template {
+    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    Template::render("edit", &map)
+}
+
+#[get("/docs")]
+fn docs() -> Template {
+    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    Template::render("docs", &map)
+}
+
+#[get("/logs")]
+fn logs() -> Template {
+    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    Template::render("logs", &map)
+}
+
 #[catch(404)]
 fn not_found(req: &Request) -> Template {
     let mut map = HashMap::new();
@@ -20,6 +44,7 @@ fn not_found(req: &Request) -> Template {
 fn rocket() -> rocket::Rocket {
     rocket::ignite()
         .mount("/", StaticFiles::from(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
+        .mount("/", routes![play, edit, docs, logs])
         .attach(Template::fairing())
         .register(catchers![not_found])
 }
