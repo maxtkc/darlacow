@@ -1,0 +1,20 @@
+{% extends "small-header" %}
+
+{% block small_header_title %}
+Edit
+{% endblock small_header_title %}
+
+{% block content %}
+<div class="w3-padding-32 w3-center">
+  <div class="w3-dropdown-hover">
+    <button class="w3-button w3-theme">Sequence <i class="fa fa-caret-down"></i></button>
+    <div class="w3-dropdown-content w3-bar-block w3-border">
+      <a href="#" class="w3-bar-item w3-button">Link 1</a>
+      <a href="#" class="w3-bar-item w3-button">Link 2</a>
+      <a href="#" class="w3-bar-item w3-button">Link 3</a>
+    </div>
+  </div>
+  <br>
+  TODO: Table here
+</div>
+{% endblock content %}

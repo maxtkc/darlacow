@@ -1,0 +1,12 @@
+{% extends "raw" %}
+
+{% block head %}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Darla the Cow</title>
+{% include "links" %}
+{% endblock head %}
+
+{% block body %}
+<h1>Has Body...</h1>
+{% endblock body %}

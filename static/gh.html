@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Darla the Cow</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+      <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+      </style>
+  </style>
+  <link rel="stylesheet" href="github-markdown.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<article class="markdown-body">
+<p><a href="file:///home/max/Downloads/Cow_Moo-Mike_Koenig-42670858.mp3"><img src="https://img.shields.io/badge/cow-moo-ffffff.svg" alt="yay" /></a></p>
+<h1 id="darla-the-cow">Darla the Cow</h1>
+<pre><code>_______________________
+&lt; Hi, my name is Darla! &gt;
+ -----------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||</code></pre>
+<h2 id="tldr">tl;dr</h2>
+<blockquote>
+<p>A far-too-complex system for driving a very strange robotic cow.</p>
+</blockquote>
+<h2 id="users-guide">User’s Guide</h2>
+<h3 id="troubleshooting-why-isnt-she-working">Troubleshooting <code>Why isn't she working?</code></h3>
+<ul>
+<li>Darla is powered on <code>(Hint: Lots of blinky lights)</code></li>
+<li>Darla is connected to the internet <code>(Hint: More blinky lights -- specifically around ethernet port)</code></li>
+<li>Darla has been power cycled <code>(Hint: Have you tried turning it off and on again?)</code></li>
+<li>Sam has been emailed <code>(stkchristy@gmail.com)</code></li>
+<li>Max has been emailed <code>(maxkatzchristy@gmail.com)</code></li>
+</ul>
+<h2 id="developers-guide">Developer’s Guide</h2>
+<p>The Raspberry Pi (RPI) is hosting a web server which clients can connect to to edit and play sequences. The RPI is running Raspbian Stretch lite (headless) and starts the server, a compiled executable, upon booting up. The executable is cross compiled from a machine with the Rust compiler installed.</p>
+<h3 id="building">Building</h3>
+<p>How to build and install required software from scratch.</p>
+<ul>
+<li>Required tools
+<ul>
+<li>Raspberry Pi</li>
+<li>SD Card (4GB+)</li>
+<li>Computer Running Linux (others will work…)</li>
+</ul></li>
+<li>Install Raspbian on the SD Card
+<ul>
+<li><a href="https://www.raspberrypi.org/downloads/raspbian/">Download Raspbian</a> (Lite, torrent or zip)</li>
+<li>Use <code>lsblk</code> to find partition name and <code>dd</code> to write to disk. <code>if=~/Downloads/&lt;file here&gt; of=/dev/&lt;partition name (sd_)&gt;</code></li>
+<li>Add <code>ssh</code> file to the root of the boot partition of the install</li>
+</ul></li>
+<li>Build the binary
+<ul>
+<li>Install <a href="https://rustup.rs/">Rust</a></li>
+<li>Set up <a href="https://github.com/japaric/rust-cross">cross compiling</a> for <code>armv7</code> (<code>gnueabihf</code> is good)
+<ul>
+<li>Basically just install the gcc-for-arm-thingy, add the target, edit the config</li>
+</ul></li>
+<li>Clone the repo and <code>cd</code> into it</li>
+<li><code>cargo build --target=armv7-unknown-linux-gnueabihf</code></li>
+<li>Copy the files over
+<ul>
+<li><code>scp -r static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@&lt;ip&gt;:~</code></li>
+</ul></li>
+<li><code>ssh</code> to server and test run</li>
+</ul></li>
+<li>Make it automatically run every time
+<ul>
+<li><code>sudo vim /etc/rc.local</code></li>
+<li>Add between comment and exit 0
+<ul>
+<li><code>ROCKET_ENV=production cd /home/pi &amp;&amp; ./darlacow</code></li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="components">Components</h3>
+<ul>
+<li>Raspberry Pi
+<ul>
+<li>Raspbian Stretch Lite</li>
+<li>Runs compiled binary on boot</li>
+<li>Connected to 192.168.1.17 for TODO (eth/wifi)</li>
+<li>Connected to 192.168.1.18 for TODO (eth/wifi)</li>
+</ul></li>
+<li>Rust
+<ul>
+<li>Programming Language</li>
+<li>Used to build the binary</li>
+<li>Crates (packages)
+<ul>
+<li><code>Rocket</code> web-engine</li>
+<li><code>tera</code> template engine</li>
+</ul></li>
+</ul></li>
+</ul>
+<h3 id="things-we-write-down">Things we write down</h3>
+<p>TODO</p>
+<h3 id="todo">TODO</h3>
+<ul>
+<li>[ ] Combine and make it function properly</li>
+<li>[ ] Use <a href="https://github.com/pyros2097/rust-embed">rust-embed</a> to make deployment easier</li>
+<li>[ ] Add theme</li>
+</ul>
+<h2 id="authors">Authors</h2>
+<p>👴 <a href="mailto:stkchristy@gmail.com">Sam Christy</a> 👴</p>
+<p>🤣 <a href="mailto:maxkatzchristy@gmail.com">Max Katz-Christy</a> 🤣</p>
+<p>🤔 <a href="mailto:ninakatzchristy@college.harvard.edu">Nina Katz-Christy</a> 🤔</p>
+</article>
+</body>
+</html>

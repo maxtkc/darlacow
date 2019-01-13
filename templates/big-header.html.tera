@@ -1,0 +1,15 @@
+{% extends "base" %}
+
+{% block body %}
+{% include "nav" %}
+<!-- Header -->
+<header class="w3-container w3-theme w3-padding" id="myHeader">
+  <i onclick="w3_open()" class="fa fa-bars w3-xlarge w3-button w3-theme"></i>
+  <a href="/" style="text-decoration:none"><div class="w3-center">
+      <h1 class="w3-xxxlarge w3-animate-bottom">Darla the Cow</h1>
+  </div></a>
+</header>
+    {% block content %}
+    <h1>Has Content...</h1>
+    {% endblock content %}
+{% endblock body %}

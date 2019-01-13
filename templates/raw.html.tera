@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block head %}
+        <title>Darla the Cow</title>
+        {% endblock head %}
+    </head>
+    <body>
+        {% block body %}
+        <h1>Missing Body...</h1>
+        {% endblock body %}
+    </body>
+</html>

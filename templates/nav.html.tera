@@ -1,0 +1,9 @@
+<!-- Side Navigation -->
+<nav class="w3-sidebar w3-bar-block w3-card w3-animate-left w3-center" style="display:none" id="mySidebar">
+  <h1 class="w3-xxxlarge w3-text-theme">Menu</h1>
+  <button class="w3-bar-item w3-button" onclick="w3_close()">Close <i class="fa fa-remove"></i></button>
+  <a href="/" class="w3-bar-item w3-button">Play</a>
+  <a href="/edit" class="w3-bar-item w3-button">Edit</a>
+  <a href="/docs" class="w3-bar-item w3-button">Docs</a>
+  <a href="/logs" class="w3-bar-item w3-button">Logs</a>
+</nav>

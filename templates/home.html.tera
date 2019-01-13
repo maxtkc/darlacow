@@ -1,0 +1,39 @@
+{% extends "big-header" %}
+
+{% block content %}
+<div class="w3-padding-32 w3-center">
+  <select id="seq" class="w3-button w3-text w3-select w3-theme" style="width:120px">
+    {% for seq in seqs %}
+        <option value="{{seq}}">{{seq}}</option>
+    {% endfor %}
+  </select>
+  <br>
+  <br>
+  <button id="play" class="w3-btn w3-xlarge w3-dark-grey w3-hover-light-grey" style="font-weight:900;">Play</button>
+  <div class="w3-light-gray">
+    <div id="myBar" class="w3-center w3-padding w3-theme" style="width:5%; transition-duration:.25s; transition-timing-function: linear">Press Play!</div>
+  </div>
+</div>
+
+<script>
+$("#play").click(function() {
+  $.get("play/" + $("#seq").val(), function(data) {
+    var elem = document.getElementById("myBar");
+    var width = 0;
+    var id = setInterval(frame, 100);
+    elem.style.transitionDuration = .1 + 's';
+    function frame() {
+      console.log(width);
+      if (width >= 100) {
+        clearInterval(id);
+      } else {
+        width += 10000/data;
+        elem.style.width = width + '%';
+        elem.innerHTML = Math.round(width * 1)  + '%';
+      }
+    }
+  });
+});
+</script>
+
+{% endblock content %}
