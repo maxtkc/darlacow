@@ -13,15 +13,21 @@ use rocket::Request;
 use std::collections::HashMap;
 use std::path::Path;
 use std::{thread, time};
+use std::process;
 
 use rusqlite::types::ToSql;
 use rusqlite::{Connection, NO_PARAMS};
 
 use serde_json::Value;
-use serde_json::Number;
+
+use rust_gpiozero::LED;
+use rust_gpiozero::OutputDeviceTrait;
 
 /// Names of each of the relays
 const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3"];
+const RELAY_PINS: &'static [u64] = &[15, 11, 16];
+const MAIN_MOT_I: &'static &usize = & &2;
+const MAIN_MOT_SLEEP: &'static u64 = &200;
 //const RELAYS: &'static [(u8, &'static str)] = &[
 //    (15, "Relay 1"),
 //    (11, "Relay 2"),
@@ -42,6 +48,14 @@ fn home() -> Template {
 }
 
 
+/// Stop route --------------------------------------------------------
+
+#[get("/stop")]
+fn stop() -> () {
+    process::exit(1);
+}
+
+
 /// Play route --------------------------------------------------------
 
 #[get("/play/<name>")]
@@ -53,6 +67,7 @@ fn play(name: String) -> String {
     let json: Value = serde_json::from_str(&seq).unwrap();
     println!("{}", serde_json::to_string(&json).unwrap());
 
+    // get total time to return
     let mut i = 0;
     let mut sum = 0;
     while json[i] != Value::Null {
@@ -60,7 +75,15 @@ fn play(name: String) -> String {
         sum += json[i]["time"].as_u64().unwrap();
         i += 1;
     }
+
+    // start thread to play
     thread::spawn(move || {
+        // create list of relays
+        let mut relay_devs: Vec<LED> = Vec::new();
+        for pin in RELAY_PINS {
+            relay_devs.push(LED::new(*pin));
+        }
+
         println!("\n\nplaying data:\n{}\n", json);
         let mut i = 0;
         while json[i] != Value::Null {
@@ -70,13 +93,28 @@ fn play(name: String) -> String {
             // relays
             for (j, relay) in RELAYS.iter().enumerate() {
                 if json[i][relay].as_bool().unwrap_or_default() == true {
-
                     println!("turning on {}", relay);
+                    relay_devs[j].on();
+                } else {
+                    println!("turning off {}", relay);
+                    relay_devs[j].off();
                 }
             }
             // secondary motion
+        
+
             // wait
-            thread::sleep(time::Duration::from_millis(json[i]["time"].as_u64().unwrap()));
+            // edge case: main motion
+            if json[i][MAIN_MOT_I].as_bool().unwrap_or_default() {
+                thread::sleep(time::Duration::from_millis(
+                        *MAIN_MOT_SLEEP));
+                relay_devs[**MAIN_MOT_I].off();
+                thread::sleep(time::Duration::from_millis(
+                        json[i]["time"].as_u64().unwrap()
+                        - *MAIN_MOT_SLEEP));
+            }
+            thread::sleep(time::Duration::from_millis(
+                    json[i]["time"].as_u64().unwrap()));
             i += 1;
         }
         println!("done with sequence\n------------------------\n");
@@ -100,7 +138,7 @@ fn edit() -> Template {
 
 #[get("/docs")]
 fn docs() -> Template {
-    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    let map: HashMap<u8, u8> = HashMap::with_capacity(0);
     Template::render("docs", &map)
 }
 
@@ -109,7 +147,7 @@ fn docs() -> Template {
 
 #[get("/logs")]
 fn logs() -> Template {
-    let mut map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    let map: HashMap<u8, u8> = HashMap::with_capacity(0);
     Template::render("logs", &map)
 }
 
@@ -193,7 +231,8 @@ fn rocket() -> rocket::Rocket {
                get_seq,
                new_seq,
                set_seq,
-               play])
+               play,
+               stop])
         .attach(Template::fairing())
         .register(catchers![not_found])
 }

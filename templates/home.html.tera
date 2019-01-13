@@ -10,21 +10,23 @@
   <br>
   <br>
   <button id="play" class="w3-btn w3-xlarge w3-dark-grey w3-hover-light-grey" style="font-weight:900;">Play</button>
+  <button id="stop" class="w3-btn w3-xlarge w3-dark-grey w3-hover-light-grey" style="font-weight:900;">Stop</button>
   <div class="w3-light-gray">
-    <div id="myBar" class="w3-center w3-padding w3-theme" style="width:5%; transition-duration:.25s; transition-timing-function: linear">Press Play!</div>
+    <div id="myBar" class="w3-center w3-padding w3-theme" style="width:100%; transition-duration:.25s; transition-timing-function: linear">Press Play!</div>
   </div>
 </div>
 
 <script>
+var id;
 $("#play").click(function() {
   $.get("play/" + $("#seq").val(), function(data) {
     var elem = document.getElementById("myBar");
     var width = 0;
-    var id = setInterval(frame, 100);
+    id = setInterval(frame, 100);
     elem.style.transitionDuration = .1 + 's';
     function frame() {
-      console.log(width);
       if (width >= 100) {
+        elem.innerHTML = "Press Play!";
         clearInterval(id);
       } else {
         width += 10000/data;
@@ -33,6 +35,13 @@ $("#play").click(function() {
       }
     }
   });
+});
+$("#stop").click(function() {
+  clearInterval(id);
+  var elem = document.getElementById("myBar");
+  elem.innerHTML = "Press Play!";
+  elem.style.width = '100%';
+  $.get("stop");
 });
 </script>
 
