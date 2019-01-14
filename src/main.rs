@@ -1,9 +1,20 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
+// the server engine itself
 #[macro_use] extern crate rocket;
+// for tera templates and other rocket extras
 extern crate rocket_contrib;
 
+// serialize/deserialize json (strings <-> json)
 #[macro_use] extern crate serde_json;
+
+// crate for gpio pins on raspberry pi
+extern crate rust_gpiozero;
+// serial
+extern crate serialport;
+
+// sqlite database client
+extern crate rusqlite;
 
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
@@ -23,15 +34,13 @@ use serde_json::Value;
 use rust_gpiozero::LED;
 use rust_gpiozero::OutputDeviceTrait;
 
+use serialport::prelude::*;
+
 /// Names of each of the relays
-const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3"];
-const RELAY_PINS: &'static [u64] = &[15, 11, 16];
+const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4"];
+const RELAY_PINS: &'static [u64] = &[2, 3, 4, 5];
 const MAIN_MOT_I: &'static &usize = & &2;
 const MAIN_MOT_SLEEP: &'static u64 = &200;
-//const RELAYS: &'static [(u8, &'static str)] = &[
-//    (15, "Relay 1"),
-//    (11, "Relay 2"),
-//    (16, "Relay 3")];
 
 /// Names of each of the songs
 const SONGS: &'static [&'static str] = &["", "Song 1", "Song 2", "Song 3"];
@@ -84,6 +93,15 @@ fn play(name: String) -> String {
             relay_devs.push(LED::new(*pin));
         }
 
+        // open serial port
+        //let port_name = &serialport::available_ports().unwrap()[0].port_name;
+        let port_name = "/dev/ttyAMA0";
+        let baud_rate = 9600;
+        let mut settings: SerialPortSettings = Default::default();
+        settings.timeout = time::Duration::from_millis(10);
+        settings.baud_rate = baud_rate;
+        let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+
         println!("\n\nplaying data:\n{}\n", json);
         let mut i = 0;
         while json[i] != Value::Null {
@@ -101,7 +119,13 @@ fn play(name: String) -> String {
                 }
             }
             // secondary motion
-        
+            let sec_mot = json[i]["sec_mot"].as_str().unwrap_or_default();
+            println!("secondary motion {}", sec_mot);
+            if sec_mot == "out" {
+                port.write("F".as_bytes());
+            } else if sec_mot == "in" {
+                port.write("R".as_bytes());
+            }
 
             // wait
             // edge case: main motion

@@ -10,6 +10,10 @@ serde = "1.0"
 serde_json = "1.0"
 rust_gpiozero = "0.1.0"
 
+[dependencies.serialport]
+default-features = false
+version = "3.1"
+
 [dependencies.rocket_contrib]
 default-features = false
 features = ["serve", "tera_templates"]
