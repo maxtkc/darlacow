@@ -77,6 +77,9 @@ TODO
 ### TODO
 
 - [ ] Combine and make it function properly
+  - [x] GPIO
+  - [ ] Serial
+  - [ ] Bluetooth
 - [ ] Use [rust-embed](https://github.com/pyros2097/rust-embed) to make deployment easier
 - [ ] Add theme
 - [ ] Cow over moon progress bar?
