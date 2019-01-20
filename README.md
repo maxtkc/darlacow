@@ -72,7 +72,32 @@ How to build and install required software from scratch.
 
 ### Things we write down
 
-TODO
+## Bluetooth
+> oof
+
+Make sure the pi user is added to all relevant user groups (otherwise sudo is necessary)
+Other issue with module stuff, [answer](https://raspberrypi.stackexchange.com/questions/67617/bluetoothctl-fails-to-connect-to-any-device-failed-to-connect-org-bluez-erro)
+Essentially:
+- `sudo vi /etc/pulse/default.pa`
+  - Comment out the line loading `module-bluetooth-discover` to `#load-module module-bluetooth-discover`
+- `sudo vi /usr/bin/start-pulseaudio-x11`
+  - after the lines 
+
+```
+    if [ x”$SESSION_MANAGER” != x ] ; then
+        /usr/bin/pactl load-module module-x11-xsmp “display=$DISPLAY session_manager=$SESSION_MANAGER” > /dev/null
+    fi
+```
+
+  - add line
+
+```
+    /usr/bin/pactl load-module module-bluetooth-discover
+```
+
+  - Bluetooth should now be loaded after x11 is started
+  - Reboot
+  - `pactl load-module module-bluetooth-discover`
 
 ### TODO
 

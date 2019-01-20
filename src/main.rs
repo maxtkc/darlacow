@@ -95,7 +95,7 @@ fn play(name: String) -> String {
 
         // open serial port
         //let port_name = &serialport::available_ports().unwrap()[0].port_name;
-        let port_name = "/dev/ttyAMA0";
+        let port_name = "/dev/ttyACM0";
         let baud_rate = 9600;
         let mut settings: SerialPortSettings = Default::default();
         settings.timeout = time::Duration::from_millis(10);
