@@ -72,7 +72,7 @@ How to build and install required software from scratch.
 
 ### Things we write down
 
-## Bluetooth
+#### Bluetooth
 > oof
 
 Make sure the pi user is added to all relevant user groups (otherwise sudo is necessary)
