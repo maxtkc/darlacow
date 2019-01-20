@@ -37,9 +37,9 @@ use rust_gpiozero::OutputDeviceTrait;
 use serialport::prelude::*;
 
 /// Names of each of the relays
-const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4"];
-const RELAY_PINS: &'static [u64] = &[2, 3, 4, 5];
-const MAIN_MOT_I: &'static &usize = & &2;
+const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4",  "Relay 5",  "Relay 6",  "Relay 7",  "Main Motion"];
+const RELAY_PINS: &'static [u64] = &[2, 3, 4, 5, 6, 7, 8, 9];
+const MAIN_MOT_I: &'static &usize = & &7;
 const MAIN_MOT_SLEEP: &'static u64 = &200;
 
 /// Names of each of the songs
@@ -112,10 +112,10 @@ fn play(name: String) -> String {
             for (j, relay) in RELAYS.iter().enumerate() {
                 if json[i][relay].as_bool().unwrap_or_default() == true {
                     println!("turning on {}", relay);
-                    relay_devs[j].on();
+                    relay_devs[j].off();
                 } else {
                     println!("turning off {}", relay);
-                    relay_devs[j].off();
+                    relay_devs[j].on();
                 }
             }
             // secondary motion
