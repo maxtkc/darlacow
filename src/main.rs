@@ -16,6 +16,9 @@ extern crate serialport;
 // sqlite database client
 extern crate rusqlite;
 
+// music player dameon client for rust
+extern crate mpd;
+
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
 
@@ -36,14 +39,16 @@ use rust_gpiozero::OutputDeviceTrait;
 
 use serialport::prelude::*;
 
+use mpd::{Client,Song};
+
 /// Names of each of the relays
 const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4",  "Relay 5",  "Relay 6",  "Relay 7",  "Main Motion"];
 const RELAY_PINS: &'static [u64] = &[2, 3, 4, 5, 6, 7, 8, 9];
 const MAIN_MOT_I: &'static &usize = & &7;
 const MAIN_MOT_SLEEP: &'static u64 = &200;
 
-/// Names of each of the songs
-const SONGS: &'static [&'static str] = &["", "Song 1", "Song 2", "Song 3"];
+/// Names of each of the songs TODO: dynamically grab from songs dir
+const SONGS: &'static [&'static str] = &["", "West Side Story [10] Intermission.m4a", "West Side Story [11] I feel Pretty.m4a", "West Side Story [12] One hand, One heart.m4a", "West Side Story [13] Quintet.m4a"];
 
 
 /// Home route --------------------------------------------------------
@@ -69,8 +74,8 @@ fn stop() -> () {
 
 #[get("/play/<name>")]
 fn play(name: String) -> String {
-    let conn = Connection::open(Path::new("db/sequences.db")).unwrap();
-    let seq: String = conn.query_row("SELECT data FROM seq WHERE name = ?1",
+    let sqlconn = Connection::open(Path::new("db/sequences.db")).unwrap();
+    let seq: String = sqlconn.query_row("SELECT data FROM seq WHERE name = ?1",
                    &[&name], |row| { row.get(0) }).unwrap();
     // Creates json variable that can be used dynamically ie. json[0]["lksdjf"]
     let json: Value = serde_json::from_str(&seq).unwrap();
@@ -87,6 +92,28 @@ fn play(name: String) -> String {
 
     // start thread to play
     thread::spawn(move || {
+        // load music
+        let mut mpdconn = Client::connect("127.0.0.1:6600").unwrap();
+        //mpdconn.volume(100).unwrap();
+        let mut j = 0;
+        while json[j] != Value::Null {
+            mpdconn.push(Song {
+                file: json[j]["song"].to_string(),
+                         ..Default::default()
+            });
+            j += 1;
+        }
+        mpdconn.volume(100).unwrap_or_default();
+        //match mpdconn.volume(100).unwrap() {
+        //    Ok(e) => ;,
+        //    Err(e) => println!("vol failed")
+        //}
+        //panic::catch_unwind(|| {
+        //    mpdconn.run_command("setvol", 100).unwrap();
+        //});
+        mpdconn.play().unwrap();
+        println!("Status: {:?}", mpdconn.status());
+
         // create list of relays
         let mut relay_devs: Vec<LED> = Vec::new();
         for pin in RELAY_PINS {

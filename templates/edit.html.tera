@@ -68,7 +68,7 @@ columns:[
 {% for name in relays %}
 {title:"{{name}}", field:"{{name}}", headerVertical:true, editor:"tickCross", formatter:"tickCross", editorParams:{indeterminateValue:"n/a"}, align:"center"},
 {% endfor %}
-{title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "in":"in", "out":"out"}}, align:"center"},
+{title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"":"", "in":"in", "out":"out"}}, align:"center"},
 ],
 });
 refresh();
