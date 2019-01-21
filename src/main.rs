@@ -94,20 +94,21 @@ fn play(name: String) -> String {
     thread::spawn(move || {
         // load music
         let mut mpdconn = Client::connect("127.0.0.1:6600").unwrap();
-        //mpdconn.volume(100).unwrap();
-        let mut j = 0;
-        while json[j] != Value::Null {
-            println!("{}", json[j]["song"]);
-            let mut file = json[j]["song"].to_string();
+        mpdconn.clear();
+        let mut song_i = 0;
+        while json[song_i] != Value::Null {
+            println!("{}", json[song_i]["song"]);
+            let mut file = json[song_i]["song"].to_string();
             file.remove(0);
             file.remove(file.capacity() - 2);
             mpdconn.push(Song {
                 file: format!("darlacow/songs/{}", file),
                          ..Default::default()
             });
-            j += 1;
+            song_i += 1;
         }
         mpdconn.volume(100).unwrap_or_default();
+        song_i = 0;
 
         // create list of relays
         let mut relay_devs: Vec<LED> = Vec::new();
@@ -129,6 +130,15 @@ fn play(name: String) -> String {
         while json[i] != Value::Null {
             println!("row: {}", json[i]);
             // song
+            if json[i]["song"].as_str().unwrap_or_default() != "" {
+                println!("Playing song {}", song_i);
+                if song_i > 0 {
+                    mpdconn.next();
+                } else {
+                    mpdconn.play();
+                }
+                song_i += 1;
+            }
             
             // relays
             for (j, relay) in RELAYS.iter().enumerate() {
@@ -163,6 +173,7 @@ fn play(name: String) -> String {
                     json[i]["time"].as_u64().unwrap()));
             i += 1;
         }
+        mpdconn.stop();
         println!("done with sequence\n------------------------\n");
     });
     return sum.to_string();
