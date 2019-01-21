@@ -99,6 +99,11 @@ Essentially:
   - Reboot
   - `pactl load-module module-bluetooth-discover`
 
+Auto pairing:
+[https://raspberrypi.stackexchange.com/questions/53408/automatically-connect-trusted-bluetooth-speaker](https://raspberrypi.stackexchange.com/questions/53408/automatically-connect-trusted-bluetooth-speaker)
+
+- Just add `su -c "/home/pi/darlacow/scripts/blue.sh" pi > /home/pi/hi` to `/etc/rc.local`
+
 ### TODO
 
 - [ ] Combine and make it function properly
