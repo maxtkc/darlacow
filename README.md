@@ -102,7 +102,12 @@ Essentially:
 Auto pairing:
 [https://raspberrypi.stackexchange.com/questions/53408/automatically-connect-trusted-bluetooth-speaker](https://raspberrypi.stackexchange.com/questions/53408/automatically-connect-trusted-bluetooth-speaker)
 
-- Just add `su -c "/home/pi/darlacow/scripts/blue.sh" pi > /home/pi/hi` to `/etc/rc.local`
+- Just add `su -c "/home/pi/darlacow/scripts/start.sh" pi > /home/pi/hi` to `/etc/rc.local`
+
+#### MPD
+
+MPD is started from `start.sh`
+After installing, `sudo systemctl disable mpd`
 
 ### TODO
 

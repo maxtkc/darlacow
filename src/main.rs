@@ -66,6 +66,8 @@ fn home() -> Template {
 
 #[get("/stop")]
 fn stop() -> () {
+    let mut mpdconn = Client::connect("127.0.0.1:6600").unwrap();
+    mpdconn.stop();
     process::exit(1);
 }
 
