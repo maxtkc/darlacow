@@ -97,22 +97,17 @@ fn play(name: String) -> String {
         //mpdconn.volume(100).unwrap();
         let mut j = 0;
         while json[j] != Value::Null {
+            println!("{}", json[j]["song"]);
+            let mut file = json[j]["song"].to_string();
+            file.remove(0);
+            file.remove(file.capacity() - 2);
             mpdconn.push(Song {
-                file: json[j]["song"].to_string(),
+                file: format!("darlacow/songs/{}", file),
                          ..Default::default()
             });
             j += 1;
         }
         mpdconn.volume(100).unwrap_or_default();
-        //match mpdconn.volume(100).unwrap() {
-        //    Ok(e) => ;,
-        //    Err(e) => println!("vol failed")
-        //}
-        //panic::catch_unwind(|| {
-        //    mpdconn.run_command("setvol", 100).unwrap();
-        //});
-        mpdconn.play().unwrap();
-        println!("Status: {:?}", mpdconn.status());
 
         // create list of relays
         let mut relay_devs: Vec<LED> = Vec::new();
