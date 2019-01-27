@@ -126,6 +126,7 @@ fn play(name: String) -> String {
         settings.timeout = time::Duration::from_millis(10);
         settings.baud_rate = baud_rate;
         let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+        port.write("S".as_bytes());
 
         println!("\n\nplaying data:\n{}\n", json);
         let mut i = 0;
