@@ -9,7 +9,7 @@ extern crate rocket_contrib;
 #[macro_use] extern crate serde_json;
 
 // crate for gpio pins on raspberry pi
-extern crate rust_gpiozero;
+extern crate rppal;
 // serial
 extern crate serialport;
 
@@ -19,33 +19,50 @@ extern crate rusqlite;
 // music player dameon client for rust
 extern crate mpd;
 
+// Static files and jinja template engine
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
 
+// Request struct
 use rocket::Request;
 
+// For passing to templates
 use std::collections::HashMap;
+// General
 use std::path::Path;
+// Threading
 use std::{thread, time};
 use std::process;
 
+// Rust sqlite crate
 use rusqlite::types::ToSql;
 use rusqlite::{Connection, NO_PARAMS};
 
+// Serialize and deserialize json
 use serde_json::Value;
 
-use rust_gpiozero::LED;
-use rust_gpiozero::OutputDeviceTrait;
+// High level rapsberry pi peripheral access
+use rppal::i2c::I2c;
 
+// For serial to arduino
 use serialport::prelude::*;
 
+// Crate to communicate with Music Player Dameon
 use mpd::{Client,Song};
 
 /// Names of each of the relays
+/// Set these names to the names of the physical devices
+/// **Set them in the order that they are wired to the board**
 const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4",  "Relay 5",  "Relay 6",  "Relay 7",  "Main Motion"];
-const RELAY_PINS: &'static [u64] = &[14, 15, 23, 18, 16, 20, 12, 21];
-const MAIN_MOT_I: &'static &usize = & &7;
-const MAIN_MOT_SLEEP: &'static u64 = &200;
+const MAIN_MOT_I: &'static &usize = & &7; // The index of main_motion in the RELAYS array
+const MAIN_MOT_SLEEP: &'static u64 = &200; // Main motion requires the on off thing (in milliseconds)
+
+// MCP23017 I2C default slave address.
+const ADDR_MPC23017: u16 = 0x20;
+
+// MCP23017 Registers
+const MCP23017_IODIRA: u8 = 0x00; // data direction
+const MCP23017_GPIOA: u8 = 0x12; // ports
 
 /// Names of each of the songs TODO: dynamically grab from songs dir
 const SONGS: &'static [&'static str] = &["", "West Side Story [10] Intermission.m4a", "West Side Story [11] I feel Pretty.m4a", "West Side Story [12] One hand, One heart.m4a", "West Side Story [13] Quintet.m4a"];
@@ -56,6 +73,8 @@ const SONGS: &'static [&'static str] = &["", "West Side Story [10] Intermission.
 #[get("/")]
 fn home() -> Template {
     let mut map = HashMap::new();
+
+    // Gets sequences to list as options to play
     let json: Value = serde_json::from_str(&get_seqs()).unwrap();
     map.insert("seqs", &json);
     Template::render("home", &map)
@@ -66,8 +85,11 @@ fn home() -> Template {
 
 #[get("/stop")]
 fn stop() -> () {
+    // Kill MPD
     let mut mpdconn = Client::connect("127.0.0.1:6600").unwrap();
     mpdconn.stop();
+
+    // Kill process
     process::exit(1);
 }
 
@@ -76,9 +98,13 @@ fn stop() -> () {
 
 #[get("/play/<name>")]
 fn play(name: String) -> String {
+    // Create a connection to the sql database
     let sqlconn = Connection::open(Path::new("db/sequences.db")).unwrap();
+
+    // Get the json of the sequence with name 'name' from the database
     let seq: String = sqlconn.query_row("SELECT data FROM seq WHERE name = ?1",
                    &[&name], |row| { row.get(0) }).unwrap();
+
     // Creates json variable that can be used dynamically ie. json[0]["lksdjf"]
     let json: Value = serde_json::from_str(&seq).unwrap();
     println!("{}", serde_json::to_string(&json).unwrap());
@@ -112,11 +138,14 @@ fn play(name: String) -> String {
         mpdconn.volume(100).unwrap_or_default();
         song_i = 0;
 
-        // create list of relays
-        let mut relay_devs: Vec<LED> = Vec::new();
-        for pin in RELAY_PINS {
-            relay_devs.push(LED::new(*pin));
-        }
+        // create i2c instance
+        let mut i2c = I2c::new().unwrap();
+
+        // Set the I2C slave address to the device we're communicating with.
+        i2c.set_slave_address(ADDR_MPC23017).unwrap();
+
+        // set relays to outputs
+        i2c.block_write(MCP23017_IODIRA, &[0, 0]).unwrap();
 
         // open serial port
         //let port_name = &serialport::available_ports().unwrap()[0].port_name;
@@ -144,15 +173,19 @@ fn play(name: String) -> String {
             }
             
             // relays
+            let mut relay_val: u16 = 0;
             for (j, relay) in RELAYS.iter().enumerate() {
-                if json[i][relay].as_bool().unwrap_or_default() == true {
+                if json[i][relay].as_bool().unwrap_or_default() {
                     println!("turning on {}", relay);
-                    relay_devs[j].off();
-                } else {
-                    println!("turning off {}", relay);
-                    relay_devs[j].on();
+                    relay_val += 1 << j;
                 }
             }
+            println!("Relays set to {}", relay_val);
+            i2c.block_write(
+                MCP23017_GPIOA,
+                &[!(relay_val & 0xFF) as u8, !(relay_val >> 8) as u8],
+                ).unwrap();
+            
             // secondary motion
             let sec_mot = json[i]["sec_mot"].as_str().unwrap_or_default();
             println!("secondary motion {}", sec_mot);
@@ -167,7 +200,11 @@ fn play(name: String) -> String {
             if json[i][MAIN_MOT_I].as_bool().unwrap_or_default() {
                 thread::sleep(time::Duration::from_millis(
                         *MAIN_MOT_SLEEP));
-                relay_devs[**MAIN_MOT_I].off();
+                relay_val &= !(1 << **MAIN_MOT_I);
+                i2c.block_write(
+                    MCP23017_GPIOA,
+                    &[!(relay_val & 0xFF) as u8, !(relay_val >> 8) as u8],
+                    ).unwrap();
                 thread::sleep(time::Duration::from_millis(
                         json[i]["time"].as_u64().unwrap()
                         - *MAIN_MOT_SLEEP));
