@@ -32,7 +32,6 @@ use std::collections::HashMap;
 use std::path::Path;
 // Threading
 use std::{thread, time};
-use std::process;
 
 // Rust sqlite crate
 use rusqlite::types::ToSql;
@@ -53,8 +52,8 @@ use mpd::{Client,Song};
 /// Names of each of the relays
 /// Set these names to the names of the physical devices
 /// **Set them in the order that they are wired to the board**
-const RELAYS: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3",  "Relay 4",  "Relay 5",  "Relay 6",  "Relay 7",  "Main Motion"];
-const MAIN_MOT_I: &'static &usize = & &7; // The index of main_motion in the RELAYS array
+const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys",  "Marque Lights",  "Masks",  "Center Lights",  "Disco"];
+const MAIN_MOT_I: &'static &usize = & &1; // The index of main_motion in the RELAYS array
 const MAIN_MOT_SLEEP: &'static u64 = &200; // Main motion requires the on off thing (in milliseconds)
 
 // MCP23017 I2C default slave address.
@@ -89,8 +88,25 @@ fn stop() -> () {
     let mut mpdconn = Client::connect("127.0.0.1:6600").unwrap();
     mpdconn.stop();
 
-    // Kill process
-    process::exit(1);
+    // create i2c instance
+    let mut i2c = I2c::new().unwrap();
+
+    // Set the I2C slave address to the device we're communicating with.
+    i2c.set_slave_address(ADDR_MPC23017).unwrap();
+
+    // set relays to outputs
+    i2c.block_write(MCP23017_IODIRA, &[0, 0]).unwrap();
+
+    // turn off all relays
+    i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
+
+    let port_name = "/dev/ttyACM0";
+    let baud_rate = 9600;
+    let mut settings: SerialPortSettings = Default::default();
+    settings.timeout = time::Duration::from_millis(10);
+    settings.baud_rate = baud_rate;
+    let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+    port.write("S".as_bytes());
 }
 
 
@@ -208,12 +224,15 @@ fn play(name: String) -> String {
                 thread::sleep(time::Duration::from_millis(
                         json[i]["time"].as_u64().unwrap()
                         - *MAIN_MOT_SLEEP));
+            } else {
+                thread::sleep(time::Duration::from_millis(
+                        json[i]["time"].as_u64().unwrap()));
             }
-            thread::sleep(time::Duration::from_millis(
-                    json[i]["time"].as_u64().unwrap()));
             i += 1;
         }
         mpdconn.stop();
+        i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
+        port.write("S".as_bytes());
         println!("done with sequence\n------------------------\n");
     });
     return sum.to_string();

@@ -11,6 +11,8 @@ Edit
         <select id="seq" class="w3-button w3-text w3-select w3-theme" style="width:120px">
             <option value="loading...">loading...</option>
         </select>
+        <button class="w3-button w3-text w3-theme" id="play">Play</button>
+        <button id="stop" class="w3-button w3-text w3-theme" style="display:none">Stop</button>
         <button class="w3-button w3-text w3-theme" id="new-seq">New</button>
         <br>
         <button class="w3-button w3-text w3-theme" id="add-row">Add Row</button>
@@ -110,6 +112,28 @@ $("#new-seq").click(function(){
     $.ajax({url: "/new_seq/" + sequence, success: function(result) {
         refresh();
         }});
+});
+
+function frame() {
+    clearInterval(id);
+    $("#play").show();
+    $("#stop").hide();
+}
+
+var id;
+$("#play").click(function() {
+  $.get("play/" + $("#seq").val(), function(data) {
+    id = setTimeout(frame, data);
+    $("#play").hide();
+    $("#stop").show();
+  });
+});
+
+$("#stop").click(function() {
+  clearInterval(id);
+  $("#play").show();
+  $("#stop").hide();
+  $.get("stop");
 });
 </script>
 {% endblock content %}
