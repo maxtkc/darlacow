@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cargo build --target=armv7-unknown-linux-gnueabihf &&
-    scp -r scripts/ static/ templates/ target/armv7-unknown-linux-gnueabihf/debug/darlacow $1:~/darlacow/ && ssh $1
+    #scp -r scripts/ static/ templates/ target/armv7-unknown-linux-gnueabihf/debug/darlacow $1:~/darlacow/ && ssh $1
+    scp -r scripts/ static/ templates/ $1:~/darlacow/ && ssh $1

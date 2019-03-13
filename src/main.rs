@@ -64,7 +64,7 @@ const MCP23017_IODIRA: u8 = 0x00; // data direction
 const MCP23017_GPIOA: u8 = 0x12; // ports
 
 /// Names of each of the songs TODO: dynamically grab from songs dir
-const SONGS: &'static [&'static str] = &["", "West Side Story [10] Intermission.m4a", "West Side Story [11] I feel Pretty.m4a", "West Side Story [12] One hand, One heart.m4a", "West Side Story [13] Quintet.m4a"];
+const SONGS: &'static [&'static str] = &["", "BYARD.mp3", "CRACK.mp3", "ICE-C.mp3", "LONE.mp3", "LOONY.mp3", "MLING.mp3", "MTC.mp3", "NEWMC.mp3"];
 
 
 /// Home route --------------------------------------------------------
@@ -151,17 +151,22 @@ fn play(name: String) -> String {
             });
             song_i += 1;
         }
-        mpdconn.volume(100).unwrap_or_default();
+        println!("setting volume");
+        mpdconn.volume(100).unwrap_or_default(); // doesn't work for some reason
+        println!("set volume");
+
         song_i = 0;
 
         // create i2c instance
         let mut i2c = I2c::new().unwrap();
+        println!("created i2c instance");
 
         // Set the I2C slave address to the device we're communicating with.
         i2c.set_slave_address(ADDR_MPC23017).unwrap();
 
         // set relays to outputs
         i2c.block_write(MCP23017_IODIRA, &[0, 0]).unwrap();
+        println!("set relays to outputs");
 
         // open serial port
         //let port_name = &serialport::available_ports().unwrap()[0].port_name;
@@ -171,6 +176,7 @@ fn play(name: String) -> String {
         settings.timeout = time::Duration::from_millis(10);
         settings.baud_rate = baud_rate;
         let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+        println!("opened serial port");
         port.write("S".as_bytes());
 
         println!("\n\nplaying data:\n{}\n", json);
@@ -181,8 +187,10 @@ fn play(name: String) -> String {
             if json[i]["song"].as_str().unwrap_or_default() != "" {
                 println!("Playing song {}", song_i);
                 if song_i > 0 {
+                    println!("next");
                     mpdconn.next();
                 } else {
+                    println!("play");
                     mpdconn.play();
                 }
                 song_i += 1;
@@ -230,6 +238,7 @@ fn play(name: String) -> String {
             }
             i += 1;
         }
+        println!("stop");
         mpdconn.stop();
         i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
         port.write("S".as_bytes());

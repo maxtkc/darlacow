@@ -28,6 +28,9 @@ Edit
 <script>
 var sequence="loading...";
 function send_data(data) {
+    if(sequence == "Select A Sequence!") {
+        return;
+    }
     if(data == undefined) {
         data = table.getData();
     }
@@ -44,7 +47,8 @@ function refresh() {
             $("#seq").html("");
             var names = JSON.parse(result);
             if(sequence == "loading...") {
-                sequence = names[0];
+                sequence = "Select A Sequence!";
+                names.unshift(sequence);
             }
             for(i in names) {
                 if(names[i] == sequence) {
@@ -56,21 +60,70 @@ function refresh() {
             }});
 }
 
+var simpleCheckbox = function(cell, onRendered, success, cancel, editorParams){
+    //cell - the cell component for the editable cell
+    //onRendered - function to call when the editor has been rendered
+    //success - function to call to pass the successfuly updated value to Tabulator
+    //cancel - function to call to abort the edit and return to a normal cell
+    //editorParams - params object passed into the editorParams column definition property
+
+    //create and style editor
+    var editor = document.createElement("input");
+
+    editor.setAttribute("type", "checkbox");
+
+    //create and style input
+    editor.style.padding = "3px";
+    editor.style.width = "100%";
+    editor.style.boxSizing = "border-box";
+
+    //Set value of editor to the current value of the cell
+    editor.checked = cell.getValue();
+
+    //set focus on the select box when the editor is selected (timeout allows for editor to be added to DOM)
+    onRendered(function(){
+        editor.focus();
+        editor.style.css = "100%";
+    });
+
+    //when the value has been set, trigger the cell to update
+    function successFunc(){
+        success(editor.checked);
+    }
+
+    editor.addEventListener("change", successFunc);
+    //editor.addEventListener("blur", successFunc);
+
+    //return the editor element
+    return editor;
+};
+
 var table = new Tabulator("#edit-table", {
     dataEdited:function(data){
     //data - the updated table data
+        send_data(data);
+    },
+    movableRows: true,
+        rowMoved:function(row){
         send_data(data);
     },
 height:"100%",
 layout:"fitColumns",
 resizableColumns:false,
 columns:[
+{rowHandle:true, formatter:(a, b, c) => {return "↕"}, headerSort:false, frozen:true, width:30, minWidth:30},
 {title:"Time", field:"time", editor:"number", headerVertical:true, align:"center"},
 {title:"Song", field:"song", editor:"select", headerVertical:true, editorParams:{values:{ {% for song in songs %}"{{ song }}":"{{ song }}"{% if not loop.last %},{% endif %}{% endfor %} }}, align:"center"},
 {% for name in relays %}
-{title:"{{name}}", field:"{{name}}", headerVertical:true, editor:"tickCross", formatter:"tickCross", editorParams:{indeterminateValue:"n/a"}, align:"center"},
+//{title:"{{name}}", field:"{{name}}", headerVertical:true, editor:simpleCheckbox, formatter:"tickCross", editorParams:{indeterminateValue:"false"}, align:"center"},
+{title:"{{name}}", field:"{{name}}", headerVertical:true, formatter:"tickCross", align:"center",
+    cellClick:function(e, cell) {
+        cell.setValue(!cell.getValue());
+    },
+},
 {% endfor %}
 {title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"":"", "in":"in", "out":"out"}}, align:"center"},
+{formatter:(a, b, c) => {return "🗑"}, headerSort:false, frozen:true, width:30, minWidth:30, cellClick:(e, cell)=>{cell.getRow().delete()}},
 ],
 });
 refresh();

@@ -10,4 +10,4 @@
 #connect C0:28:8D:93:06:3B
 #EOF
 
-mpd &
+mpd --no-daemon -v > /home/pi/darlacow/mpd_logs &
