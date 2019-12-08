@@ -1,5 +1,7 @@
 #!/bin/bash
 
 cargo build --target=armv7-unknown-linux-gnueabihf &&
+    # Slow one. Copies all the small files and the massive binary
     #scp -r scripts/ static/ templates/ target/armv7-unknown-linux-gnueabihf/debug/darlacow $1:~/darlacow/ && ssh $1
+    # Fast one. Doesn't copy the massive binary over
     scp -r scripts/ static/ templates/ $1:~/darlacow/ && ssh $1
