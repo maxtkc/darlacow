@@ -3,6 +3,7 @@
 ## Bug fixes
 - Add all the songs (verify the songs are there)
 - Main motion and secondary motion tests
+- Make a list of passwords and store it securely somewhere
 
 
 ## Improvements
