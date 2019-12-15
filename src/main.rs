@@ -64,7 +64,7 @@ const MCP23017_IODIRA: u8 = 0x00; // data direction
 const MCP23017_GPIOA: u8 = 0x12; // ports
 
 /// Names of each of the songs TODO: dynamically grab from songs dir
-const SONGS: &'static [&'static str] = &["", "BYARD.mp3", "CRACK.mp3", "ICE-C.mp3", "LONE.mp3", "LOONY.mp3", "MLING.mp3", "MTC.mp3", "NEWMC.mp3"];
+const SONGS: &'static [&'static str] = &["", "BYARD.mp3", "CRACK.mp3", "ICE-C.mp3", "LONE.mp3", "LOONY.mp3", "MLING.mp3", "MTC.mp3", "NEWMC.mp3", "MARV.mp3", "SPACE.mp3"];
 
 
 /// Home route --------------------------------------------------------
