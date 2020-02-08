@@ -373,9 +373,23 @@ fn set_relays(relay_val: u16) -> String {
         MCP23017_GPIOA,
         &[!(relay_val & 0xFF) as u8, !(relay_val >> 8) as u8],
         ).unwrap();
-    i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
+    // i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
 
     format!("set relays to {0} ({0:b})", relay_val)
+}
+
+#[get("/secondary_motion/<serial_val>")]
+fn secondary_motion(serial_val: String) -> String {
+        // open serial port
+        //let port_name = &serialport::available_ports().unwrap()[0].port_name;
+        let port_name = "/dev/ttyACM0";
+        let baud_rate = 9600;
+        let mut settings: SerialPortSettings = Default::default();
+        settings.timeout = time::Duration::from_millis(10);
+        settings.baud_rate = baud_rate;
+        let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+        port.write(serial_val.as_bytes());
+    format!("Sent {} over serial", serial_val)
 }
 
 #[catch(404)]
@@ -399,6 +413,7 @@ fn rocket() -> rocket::Rocket {
                new_seq,
                set_seq,
                set_relays,
+               secondary_motion,
                play,
                stop])
         .attach(Template::fairing())

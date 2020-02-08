@@ -7,20 +7,27 @@ Test
 {% block content %}
 
 <div class="w3-container w3-theme">
-        <table class='w3-table-all'>
-            <tr>
+    <table class='w3-table-all'>
+        <tr>
             {% for relay in relays %}
                 <td><input class="w3-button w3-block w3-round-large w3-black" type="button" id="{{ loop.index }}" value="{{ relay }}"></td>
-{% if loop.index is even %}</tr><tr>{% endif %}
+    {% if loop.index is even %}</tr><tr>{% endif %}
             {% endfor %}
-            </tr>
+        </tr>
     </table>
+    <div class="w3-bar">
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="sec_out">Secondary Out</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="sec_stop">Secondary Stop</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="sec_in">Secondary In</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="main_mot">Main Motion (One Click)</button>
+    </div>
 </div>
-
     <script>
     $("input").click((e) => {
             $(e.target).toggleClass("w3-black");
+            $(e.target).removeClass("w3-hover-grey");
             $(e.target).toggleClass("w3-green");
+            $(e.target).toggleClass("w3-hover-green");
         relay_val = 0
          $("input").each((i, button) => {
                      if(button.className.split(' ').includes("w3-green")) {
@@ -30,6 +37,39 @@ Test
          $.get("/set_relays/" + relay_val, (data, status) => {
                      console.log("Data: " + data + "\nStatus: " + status);
                  });
+    });
+    $("#sec_out").click(() => {
+        $.get("/secondary_motion/F", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#sec_in").click(() => {
+        $.get("/secondary_motion/R", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#sec_stop").click(() => {
+        $.get("/secondary_motion/S", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#main_mot").click(() => {
+        relay_val = 0
+         $("input").each((i, button) => {
+                     if(button.className.split(' ').includes("w3-green")) {
+                         relay_val += 1 << i
+                     }
+                 })
+         relay_val += 2;
+         $.get("/set_relays/" + relay_val, (data, status) => {
+                     console.log("Data: " + data + "\nStatus: " + status);
+                 });
+         setTimeout(() => {
+             relay_val -= 2;
+             $.get("/set_relays/" + relay_val, (data, status) => {
+                         console.log("Data: " + data + "\nStatus: " + status);
+                     });
+         }, 200);
     });
     </script>
 
