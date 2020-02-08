@@ -6,22 +6,31 @@ Test
 
 {% block content %}
 
-    {% for i in range(end=16) %}
-         {{ i + 1 }}<input onclick="set_relays()" type="checkbox" id="{{ i }}" name="{{ i }}" value="{{ i }}"><br>
-    {% endfor %}
+<div class="w3-container w3-theme">
+        <table class='w3-table-all'>
+            <tr>
+            {% for relay in relays %}
+                <td><input class="w3-button w3-block w3-round-large w3-black" type="button" id="{{ loop.index }}" value="{{ relay }}"></td>
+{% if loop.index is even %}</tr><tr>{% endif %}
+            {% endfor %}
+            </tr>
+    </table>
+</div>
 
     <script>
-    function set_relays() {
-        var relay_val = 0
-        $("input").each((i, e) => {
-                    if(e.checked) {
-                        relay_val += 1 << i
-                    }
-                })
-        $.get("/set_relays/" + relay_val, (data, status) => {
-                    console.log("Data: " + data + "\nStatus: " + status);
-                });
-    }
+    $("input").click((e) => {
+            $(e.target).toggleClass("w3-black");
+            $(e.target).toggleClass("w3-green");
+        relay_val = 0
+         $("input").each((i, button) => {
+                     if(button.className.split(' ').includes("w3-green")) {
+                         relay_val += 1 << i
+                     }
+                 })
+         $.get("/set_relays/" + relay_val, (data, status) => {
+                     console.log("Data: " + data + "\nStatus: " + status);
+                 });
+    });
     </script>
 
 {% endblock content %}

@@ -53,6 +53,7 @@ use mpd::{Client,Song};
 /// Set these names to the names of the physical devices
 /// **Set them in the order that they are wired to the board**
 const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys",  "Marque Lights",  "Masks",  "Center Lights",  "Disco"];
+const RELAYS_DEFAULT: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3", "Relay 4", "Relay 5", "Relay 6", "Relay 7", "Relay 8", "Relay 9", "Relay 10", "Relay 11", "Relay 12", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
 const MAIN_MOT_I: &'static &usize = & &1; // The index of main_motion in the RELAYS array
 const MAIN_MOT_SLEEP: &'static u64 = &200; // Main motion requires the on off thing (in milliseconds)
 
@@ -263,7 +264,15 @@ fn edit() -> Template {
 
 #[get("/test")]
 fn test() -> Template {
-    let map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    let mut map = HashMap::new();
+    let mut relays: [&str; 16] = ["hello world";16];
+    for i in 0..RELAYS.len() {
+        relays[i] = &RELAYS[i];
+    }
+    for i in RELAYS.len()..relays.len() {
+        relays[i] = &RELAYS_DEFAULT[i];
+    }
+    map.insert("relays", &relays);
     Template::render("test", &map)
 }
 
