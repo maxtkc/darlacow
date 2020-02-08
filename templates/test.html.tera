@@ -1,0 +1,27 @@
+{% extends "small-header" %}
+
+{% block small_header_title %}
+Test
+{% endblock small_header_title %}
+
+{% block content %}
+
+    {% for i in range(end=16) %}
+         {{ i + 1 }}<input onclick="set_relays()" type="checkbox" id="{{ i }}" name="{{ i }}" value="{{ i }}"><br>
+    {% endfor %}
+
+    <script>
+    function set_relays() {
+        var relay_val = 0
+        $("input").each((i, e) => {
+                    if(e.checked) {
+                        relay_val += 1 << i
+                    }
+                })
+        $.get("/set_relays/" + relay_val, (data, status) => {
+                    console.log("Data: " + data + "\nStatus: " + status);
+                });
+    }
+    </script>
+
+{% endblock content %}

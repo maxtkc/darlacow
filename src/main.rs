@@ -259,6 +259,15 @@ fn edit() -> Template {
 }
 
 
+/// Test route --------------------------------------------------------
+
+#[get("/test")]
+fn test() -> Template {
+    let map: HashMap<u8, u8> = HashMap::with_capacity(0);
+    Template::render("test", &map)
+}
+
+
 /// Docs route --------------------------------------------------------
 
 #[get("/docs")]
@@ -337,6 +346,29 @@ fn set_seq(data: String, name: String) -> &'static str {
     "setting"
 }
 
+#[get("/set_relays/<relay_val>")]
+fn set_relays(relay_val: u16) -> String {
+    // create i2c instance
+    let mut i2c = I2c::new().unwrap();
+    println!("created i2c instance");
+
+    // Set the I2C slave address to the device we're communicating with.
+    i2c.set_slave_address(ADDR_MPC23017).unwrap();
+
+    // set relays to outputs
+    i2c.block_write(MCP23017_IODIRA, &[0, 0]).unwrap();
+    println!("set relays to outputs");
+
+    println!("Relays set to {}", relay_val);
+    i2c.block_write(
+        MCP23017_GPIOA,
+        &[!(relay_val & 0xFF) as u8, !(relay_val >> 8) as u8],
+        ).unwrap();
+    i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
+
+    format!("set relays to {0} ({0:b})", relay_val)
+}
+
 #[catch(404)]
 fn not_found(req: &Request) -> Template {
     let mut map = HashMap::new();
@@ -350,12 +382,14 @@ fn rocket() -> rocket::Rocket {
         .mount("/", routes![
                home,
                edit,
+               test,
                docs,
                logs,
                get_seqs,
                get_seq,
                new_seq,
                set_seq,
+               set_relays,
                play,
                stop])
         .attach(Template::fairing())
