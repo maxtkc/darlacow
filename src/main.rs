@@ -1,9 +1,5 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
 // the server engine itself
 #[macro_use] extern crate rocket;
-// for tera templates and other rocket extras
-extern crate rocket_contrib;
 
 // serialize/deserialize json (strings <-> json)
 #[macro_use] extern crate serde_json;
@@ -19,9 +15,9 @@ extern crate rusqlite;
 // music player dameon client for rust
 extern crate mpd;
 
-// Static files and jinja template engine
-use rocket_contrib::serve::StaticFiles;
-use rocket_contrib::templates::Template;
+// Static files and template engine
+use rocket::fs::{FileServer, relative};
+use rocket_dyn_templates::Template;
 
 // Request struct
 use rocket::Request;
@@ -345,12 +341,12 @@ fn set_seq(data: String, name: String) -> &'static str {
     conn.execute( // Delete any previous sequence
         "DELETE FROM seq WHERE
                   name = ?1",
-                  &[&name as &ToSql]
+                  &[&name as &dyn ToSql]
                   ).unwrap();
     conn.execute( // Make a new sequence
         "INSERT INTO seq (name, data)
                   VALUES (?1, ?2)",
-                  &[&name as &ToSql, &data as &ToSql]
+                  &[&name as &dyn ToSql, &data as &dyn ToSql]
                   ).unwrap();
     "setting"
 }
@@ -395,13 +391,13 @@ fn secondary_motion(serial_val: String) -> String {
 #[catch(404)]
 fn not_found(req: &Request) -> Template {
     let mut map = HashMap::new();
-    map.insert("path", req.uri().path());
+    map.insert("path", req.uri().path().as_str());
     Template::render("error/404", &map)
 }
 
-fn rocket() -> rocket::Rocket {
-    rocket::ignite()
-        .mount("/", StaticFiles::from("static"))
+fn rocket() -> rocket::Rocket<rocket::Build> {
+    rocket::build()
+        .mount("/", FileServer::from(relative!("static")))
         .mount("/", routes![
                home,
                edit,
@@ -417,9 +413,11 @@ fn rocket() -> rocket::Rocket {
                play,
                stop])
         .attach(Template::fairing())
-        .register(catchers![not_found])
+        .register("/", catchers![not_found])
 }
 
-fn main() {
-    rocket().launch();
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
+    let _rocket = rocket().launch().await?;
+    Ok(())
 }
