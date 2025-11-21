@@ -69,6 +69,8 @@ How to build and install required software from scratch.
   - Crates (packages)
     - `Rocket` web-engine
     - `tera` template engine
+- LED Matrix
+  - For info on the big ceiling-mounted LED matrix, see [the LED matrix README](led_matrix/README.md).
 
 ### Things we write down
 
