@@ -46,6 +46,9 @@ std::tuple<int, int> idx_2d_from_1d(int led_idx) {
   return {row, col};
 }
 
+// Given an LED index between 0 and NUM_LEDS_FULL - 1, returns a mutable
+// reference to the LED data that allows for querying and modifying the LED
+// color.
 CRGB& get_led(int led_idx) {
   assert(led_idx >= 0 && led_idx < NUM_LEDS_FULL);
 
@@ -60,11 +63,9 @@ float unit_cos(float x) { return (cos(x) + 1.0f) / 2.0f; }
 // Shift away from blue hues to make the colors look better on the display.
 // Otherwise blue visually takes over.
 uint8_t get_color_corrected_hue(uint8_t hue) {
-  static constexpr uint8_t MIN = 130;
-  static constexpr uint8_t MAX = 190;
-  // if (hue <= MIN || hue >= MAX) return hue;
-  // return 160 + pow(hue - 160, 5) / 1e6f;
-  if (MIN <= hue && hue <= MAX) return random(0, 256);
+  // static constexpr uint8_t MIN = 130;
+  // static constexpr uint8_t MAX = 190;
+  // if (MIN <= hue && hue <= MAX) return random(0, 256);
   return hue;
 }
 
@@ -204,17 +205,36 @@ void running_blocks() {
   delay(MS_PER_SHIFT);
 }
 
+void color_sampler() {
+  std::vector<uint8_t> hues = {0,   10,  20,  30,  40,  50,  60,  70,  80,
+                               90,  100, 110, 120, 130, 140, 150, 160, 170,
+                               180, 190, 200, 210, 220, 230, 240, 250};
+
+  // Draw 6 columns of solid color across the entire display.
+  int column_width = NUM_COLS / hues.size();
+  int hue_idx = 0;
+  for (int led_idx = 0; led_idx < NUM_LEDS_FULL; ++led_idx) {
+    auto [row_idx, col_idx] = idx_2d_from_1d(led_idx);
+    if (hue_idx >= hues.size() || col_idx % 2 == 0) continue;
+    const uint8_t hue = hues[hue_idx++];
+    get_led(led_idx) = CHSV(hue, 255, 255);
+  }
+  FastLED.show();
+}
+
 void setup() {
-  FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, RGB>(leds_top,
+  FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, BRG>(leds_top,
                                                              NUM_LEDS_HALF);
-  FastLED.addLeds<LPD8806, DATA_PIN_BOT, CLOCK_PIN_BOT, RGB>(leds_bot,
+  FastLED.addLeds<LPD8806, DATA_PIN_BOT, CLOCK_PIN_BOT, BRG>(leds_bot,
                                                              NUM_LEDS_HALF);
   FastLED.setBrightness(255);
   FastLED.clear();
   FastLED.show();
+
+  // color_sampler();
 }
 
 void loop() {
-  // octopus_skin();
-  running_blocks();
+  octopus_skin();
+  // running_blocks();
 }

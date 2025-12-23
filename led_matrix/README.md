@@ -17,3 +17,9 @@
 [Link](https://docs.google.com/drawings/d/1dMMITz0OXky1sPzoETWVAEU_hnqvFwCjvTqebHVzlCo/edit?usp=sharing)
 
 ![](media/circuit_diagram.png)
+
+### Software
+
+- Makes use of the FastLED library.
+    - Github repository [here](https://github.com/FastLED/FastLED).
+    - Notes on HSV color maps [here](https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors).
