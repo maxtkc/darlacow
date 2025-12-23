@@ -60,11 +60,12 @@ float unit_cos(float x) { return (cos(x) + 1.0f) / 2.0f; }
 // Shift away from blue hues to make the colors look better on the display.
 // Otherwise blue visually takes over.
 uint8_t get_color_corrected_hue(uint8_t hue) {
-  static constexpr uint8_t MAX = 190;
   static constexpr uint8_t MIN = 130;
-  static constexpr uint8_t RANGE = MAX - MIN;
-  if (hue <= MIN || hue >= MAX) return hue;
-  return 160 + pow(hue - 160, 5) / 1e6f;
+  static constexpr uint8_t MAX = 190;
+  // if (hue <= MIN || hue >= MAX) return hue;
+  // return 160 + pow(hue - 160, 5) / 1e6f;
+  if (MIN <= hue && hue <= MAX) return random(0, 256);
+  return hue;
 }
 
 void octopus_skin() {
