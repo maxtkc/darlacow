@@ -140,8 +140,9 @@ fn play(name: String) -> String {
         while json[song_i] != Value::Null {
             println!("{}", json[song_i]["song"]);
             let mut file = json[song_i]["song"].to_string();
+            // Remove the quotes from the string.
             file.remove(0);
-            file.remove(file.capacity() - 2);
+            file.remove(file.len() - 1);
             mpdconn.push(Song {
                 file: format!("darlacow/songs/{}", file),
                          ..Default::default()
