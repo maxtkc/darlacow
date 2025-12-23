@@ -49,7 +49,7 @@ How to build and install required software from scratch.
   - Clone the repo and `cd` into it
   - `cargo build --target=armv7-unknown-linux-gnueabihf`
   - Copy the files over
-    - `scp -r templates static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@<ip>:~`
+    - `scp -r templates static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@<ip>:/home/pi/darlacow/`
   - `ssh` to server and test run
 - Make it automatically run every time
   - `sudo vim /etc/rc.local`
@@ -71,6 +71,11 @@ How to build and install required software from scratch.
     - `tera` template engine
 - LED Matrix
   - For info on the big ceiling-mounted LED matrix, see [the LED matrix README](led_matrix/README.md).
+
+
+### Additional Notes
+
+- `/etc/rc.local` on the Raspberry Pi tells the pi to start the web server on boot.
 
 ### Things we write down
 

@@ -11,4 +11,4 @@ stty -F /dev/ttyACM0 -parenb -parodd -cmspar cs8 -hupcl -cstopb cread clocal -cr
 
 # SERVER MUST BE ROOT
 
-cd /home/pi/darlacow && printenv > server_logs && ROCKET_ENV=prod ./darlacow >> server_logs
+cd /home/pi/darlacow && printenv > server_logs && ROCKET_PROFILE=prod ROCKET_ADDRESS=0.0.0.0 ./darlacow >> server_logs
