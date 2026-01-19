@@ -43,6 +43,7 @@ columns:[
 {title:"{{name}}", field:"{{name}}", headerVertical:true, editor:"tickCross", formatter:"tickCross", editorParams:{indeterminateValue:"n/a"}, align:"center"},
 {% endfor %}
 {title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "in":"in", "out":"out"}}, align:"center"},
+{title:"LED Matrix", field:"led_matrix", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "off":"off", "octopus":"octopus", "blocks":"blocks"}}, align:"center"},
 ],
 });
 refresh();
@@ -51,7 +52,7 @@ refresh();
 $("#add-row").click(function(){
     var tar = table.getRows().length - 1;
     if (tar < 0) {
-        table.addRow({time:1000, sec_mot:"none"});
+        table.addRow({time:1000, sec_mot:"none", led_matrix:"none"});
     }
     else {
         table.addRow(table.getRowFromPosition(tar)._row.data);

@@ -29,7 +29,7 @@
 CRGB leds_top[NUM_LEDS_HALF];
 CRGB leds_bot[NUM_LEDS_HALF];
 
-enum Mode { MODE_OFF, MODE_OCTOPUS_SKIN, MODE_RUNNING_BLOCKS };
+enum Mode { MODE_OFF, MODE_OCTOPUS, MODE_BLOCKS };
 Mode current_mode = MODE_OFF;
 Mode previous_mode = MODE_OFF;
 
@@ -236,17 +236,17 @@ void set_mode_from_serial() {
   mode_str.trim();
   mode_str.toUpperCase();
 
-  if (mode_str == "OCTOPUS_SKIN") {
-    current_mode = MODE_OCTOPUS_SKIN;
-    Serial.println("MODE: OCTOPUS SKIN");
+  if (mode_str == "OCTOPUS") {
+    current_mode = MODE_OCTOPUS;
+    Serial.println("MODE: OCTOPUS");
   } else if (mode_str == "BLOCKS") {
-    current_mode = MODE_RUNNING_BLOCKS;
-    Serial.println("MODE: RUNNING BLOCKS");
+    current_mode = MODE_BLOCKS;
+    Serial.println("MODE: BLOCKS");
   } else if (mode_str == "OFF") {
     current_mode = MODE_OFF;
     Serial.println("MODE: OFF");
   } else {
-    Serial.print("UNKNOWN MODE: ");
+    Serial.print("RECEIVED UNKNOWN MODE: ");
     Serial.println(mode_str);
   }
 }
@@ -267,10 +267,10 @@ void loop() {
   set_mode_from_serial();
 
   switch (current_mode) {
-    case MODE_OCTOPUS_SKIN:
+    case MODE_OCTOPUS:
       octopus_skin();
       break;
-    case MODE_RUNNING_BLOCKS:
+    case MODE_BLOCKS:
       running_blocks();
       break;
     case MODE_OFF:

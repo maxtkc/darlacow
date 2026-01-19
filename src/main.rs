@@ -71,6 +71,14 @@ fn open_secondary_motion_serial_port() -> Box<dyn SerialPort> {
     sec_mot_port
 }
 
+fn open_led_matrix_serial_port() -> Box<dyn SerialPort> {
+    let mut settings: SerialPortSettings = Default::default();
+    settings.timeout = time::Duration::from_millis(10);
+    settings.baud_rate = 9600;
+    let led_matrix_port = serialport::open_with_settings("/dev/ttyACM1", &settings).unwrap();
+    led_matrix_port
+}
+
 /// Home route --------------------------------------------------------
 
 #[get("/")]
@@ -105,6 +113,7 @@ fn stop() -> () {
     i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
 
     open_secondary_motion_serial_port().write("S".as_bytes());
+    // open_led_matrix_serial_port().write_all("OFF\n".as_bytes());
 }
 
 
@@ -211,6 +220,17 @@ fn play(name: String) -> String {
             } else if sec_mot == "in" {
                 sec_mot_port.write("R".as_bytes());
             }
+
+            // led matrix
+            let led_mat = json[i]["led_mat"].as_str().unwrap_or_default();
+            println!("led matrix {}", led_mat);
+            // if led_mat == "off" {
+            //     led_mat_port.write_all("OFF\n".as_bytes());
+            // } else if led_mat == "octopus" {
+            //     led_mat_port.write_all("OCTOPUS\n".as_bytes());
+            // } else if led_mat == "blocks" {
+            //     led_mat_port.write_all("BLOCKS\n".as_bytes());
+            // }
 
             // wait
             // edge case: main motion
@@ -372,9 +392,16 @@ fn set_relays(relay_val: u16) -> String {
 
 #[get("/secondary_motion/<serial_val>")]
 fn secondary_motion(serial_val: String) -> String {
-        let mut sec_mot_port = open_secondary_motion_serial_port();
-        sec_mot_port.write(serial_val.as_bytes());
-    format!("Sent {} over serial", serial_val)
+    let mut sec_mot_port = open_secondary_motion_serial_port();
+    sec_mot_port.write(serial_val.as_bytes());
+    format!("Sent {} over serial for secondary motion", serial_val)
+}
+
+#[get("/led_matrix/<serial_val>")]
+fn led_matrix(serial_val: String) -> String {
+    // let mut led_matrix_port = open_led_matrix_serial_port();
+    // led_matrix_port.write(serial_val.as_bytes());
+    format!("Sent {} over serial for led matrix", serial_val)
 }
 
 #[catch(404)]
