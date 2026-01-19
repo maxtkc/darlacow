@@ -222,13 +222,13 @@ fn play(name: String) -> String {
             }
 
             // led matrix
-            let led_mat = json[i]["led_mat"].as_str().unwrap_or_default();
-            println!("led matrix {}", led_mat);
-            // if led_mat == "off" {
+            let led_matrix = json[i]["led_matrix"].as_str().unwrap_or_default();
+            println!("led matrix {}", led_matrix);
+            // if led_matrix == "off" {
             //     led_mat_port.write_all("OFF\n".as_bytes());
-            // } else if led_mat == "octopus" {
+            // } else if led_matrix == "octopus" {
             //     led_mat_port.write_all("OCTOPUS\n".as_bytes());
-            // } else if led_mat == "blocks" {
+            // } else if led_matrix == "blocks" {
             //     led_mat_port.write_all("BLOCKS\n".as_bytes());
             // }
 
