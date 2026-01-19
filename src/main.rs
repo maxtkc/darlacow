@@ -48,7 +48,7 @@ use mpd::{Client,Song};
 /// Names of each of the relays
 /// Set these names to the names of the physical devices
 /// **Set them in the order that they are wired to the board**
-const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys",  "Marque Lights",  "Masks",  "Center Lights",  "Disco", "LED Matrix", "Rocket Lights", "BROKEN RELAY", "Launch", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
+const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys", "Marque Lights",  "Masks",  "Center Lights",  "Disco", "LED Matrix", "Rocket Lights", "BROKEN RELAY", "Launch", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
 const RELAYS_DEFAULT: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3", "Relay 4", "Relay 5", "Relay 6", "Relay 7", "Relay 8", "Relay 9", "Relay 10", "Relay 11", "Relay 12", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
 const MAIN_MOT_I: &'static &usize = & &1; // The index of main_motion in the RELAYS array
 const MAIN_MOT_SLEEP: &'static u64 = &200; // Main motion requires the on off thing (in milliseconds)
@@ -63,6 +63,13 @@ const MCP23017_GPIOA: u8 = 0x12; // ports
 /// Names of each of the songs TODO: dynamically grab from songs dir
 const SONGS: &'static [&'static str] = &["", "BYARD.mp3", "CRACK.mp3", "ICE-C.mp3", "LONE.mp3", "LOONY.mp3", "MLING.mp3", "MTC.mp3", "NEWMC.mp3", "MARV.mp3", "SPACE.mp3"];
 
+fn open_secondary_motion_serial_port() -> Box<dyn SerialPort> {
+    let mut settings: SerialPortSettings = Default::default();
+    settings.timeout = time::Duration::from_millis(10);
+    settings.baud_rate = 9600;
+    let sec_mot_port = serialport::open_with_settings("/dev/ttyACM0", &settings).unwrap();
+    sec_mot_port
+}
 
 /// Home route --------------------------------------------------------
 
@@ -97,13 +104,7 @@ fn stop() -> () {
     // turn off all relays
     i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
 
-    let port_name = "/dev/ttyACM0";
-    let baud_rate = 9600;
-    let mut settings: SerialPortSettings = Default::default();
-    settings.timeout = time::Duration::from_millis(10);
-    settings.baud_rate = baud_rate;
-    let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
-    port.write("S".as_bytes());
+    open_secondary_motion_serial_port().write("S".as_bytes());
 }
 
 
@@ -167,15 +168,9 @@ fn play(name: String) -> String {
         println!("set relays to outputs");
 
         // open serial port
-        //let port_name = &serialport::available_ports().unwrap()[0].port_name;
-        let port_name = "/dev/ttyACM0";
-        let baud_rate = 9600;
-        let mut settings: SerialPortSettings = Default::default();
-        settings.timeout = time::Duration::from_millis(10);
-        settings.baud_rate = baud_rate;
-        let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
+        let mut sec_mot_port = open_secondary_motion_serial_port();
         println!("opened serial port");
-        port.write("S".as_bytes());
+        sec_mot_port.write("S".as_bytes());
 
         println!("\n\nplaying data:\n{}\n", json);
         let mut i = 0;
@@ -212,9 +207,9 @@ fn play(name: String) -> String {
             let sec_mot = json[i]["sec_mot"].as_str().unwrap_or_default();
             println!("secondary motion {}", sec_mot);
             if sec_mot == "out" {
-                port.write("F".as_bytes());
+                sec_mot_port.write("F".as_bytes());
             } else if sec_mot == "in" {
-                port.write("R".as_bytes());
+                sec_mot_port.write("R".as_bytes());
             }
 
             // wait
@@ -239,7 +234,7 @@ fn play(name: String) -> String {
         println!("stop");
         mpdconn.stop();
         i2c.block_write(MCP23017_GPIOA, &[0xFF, 0xFF]).unwrap();
-        port.write("S".as_bytes());
+        sec_mot_port.write("S".as_bytes());
         println!("done with sequence\n------------------------\n");
     });
     return sum.to_string();
@@ -377,15 +372,8 @@ fn set_relays(relay_val: u16) -> String {
 
 #[get("/secondary_motion/<serial_val>")]
 fn secondary_motion(serial_val: String) -> String {
-        // open serial port
-        //let port_name = &serialport::available_ports().unwrap()[0].port_name;
-        let port_name = "/dev/ttyACM0";
-        let baud_rate = 9600;
-        let mut settings: SerialPortSettings = Default::default();
-        settings.timeout = time::Duration::from_millis(10);
-        settings.baud_rate = baud_rate;
-        let mut port = serialport::open_with_settings(&port_name, &settings).unwrap();
-        port.write(serial_val.as_bytes());
+        let mut sec_mot_port = open_secondary_motion_serial_port();
+        sec_mot_port.write(serial_val.as_bytes());
     format!("Sent {} over serial", serial_val)
 }
 

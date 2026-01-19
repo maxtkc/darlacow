@@ -252,6 +252,8 @@ void set_mode_from_serial() {
 }
 
 void setup() {
+  Serial.begin(9600);
+
   FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, BRG>(leds_top,
                                                              NUM_LEDS_HALF);
   FastLED.addLeds<LPD8806, DATA_PIN_BOT, CLOCK_PIN_BOT, BRG>(leds_bot,
