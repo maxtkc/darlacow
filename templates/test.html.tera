@@ -20,6 +20,9 @@ Test
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="sec_stop">Secondary Stop</button>
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="sec_in">Secondary In</button>
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="main_mot">Main Motion (One Click)</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_off">LED Matrix: Off</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_octopus">LED Matrix: Octopus Skin</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_blocks">LED Matrix: Running Blocks</button>
     </div>
 </div>
     <script>
@@ -70,6 +73,21 @@ Test
                          console.log("Data: " + data + "\nStatus: " + status);
                      });
          }, 200);
+    });
+    $("#led_matrix_off").click(() => {
+        $.get("/led_matrix/OFF\n", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#led_matrix_octopus").click(() => {
+        $.get("/led_matrix/OCTOPUS\n", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#led_matrix_blocks").click(() => {
+        $.get("/led_matrix/BLOCKS\n", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
     });
     </script>
 
