@@ -123,7 +123,7 @@ columns:[
 },
 {% endfor %}
 {title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"":"", "in":"in", "out":"out"}}, align:"center"},
-{title:"LED Matrix", field:"led_matrix", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "off":"off", "octopus":"octopus", "blocks":"blocks"}}, align:"center"},
+{title:"LED Matrix<br>Display Mode", field:"led_matrix", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "off":"off", "octopus":"octopus", "blocks":"blocks"}}, align:"center"},
 {formatter:(a, b, c) => {return "🗑"}, headerSort:false, frozen:true, width:30, minWidth:30, cellClick:(e, cell)=>{cell.getRow().delete()}},
 ],
 });
