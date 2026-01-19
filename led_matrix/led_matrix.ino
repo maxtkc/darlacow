@@ -29,6 +29,10 @@
 CRGB leds_top[NUM_LEDS_HALF];
 CRGB leds_bot[NUM_LEDS_HALF];
 
+enum Mode { MODE_OFF, MODE_OCTOPUS_SKIN, MODE_RUNNING_BLOCKS };
+Mode current_mode = MODE_OFF;
+Mode previous_mode = MODE_OFF;
+
 // Returns `val` wrapped to between 0 and `max` - 1.
 int wrap(int val, int max) {
   while (val < 0) val += max;
@@ -60,26 +64,25 @@ CRGB& get_led(int led_idx) {
 float unit_sin(float x) { return (sin(x) + 1.0f) / 2.0f; }
 float unit_cos(float x) { return (cos(x) + 1.0f) / 2.0f; }
 
-// Shift away from blue hues to make the colors look better on the display.
-// Otherwise blue visually takes over.
-uint8_t get_color_corrected_hue(uint8_t hue) {
-  // static constexpr uint8_t MIN = 130;
-  // static constexpr uint8_t MAX = 190;
-  // if (MIN <= hue && hue <= MAX) return random(0, 256);
-  return hue;
-}
-
 void octopus_skin() {
-  static constexpr uint32_t MAX_ELAPSED_TIME = 15000;  // In milliseconds.
+  static constexpr uint32_t CYCLE_TIME_MS = 15000;  // In milliseconds.
 
   // Precompute necessary float conversions.
-  static constexpr float max_elapsed_time_f = MAX_ELAPSED_TIME;
+  static constexpr float cycle_time_ms_f = CYCLE_TIME_MS;
   static constexpr float num_idxs_per_cycle = 18.0f;
 
-  // A full cycle starts with elapsed_time at start_time and goes until
-  // elapsed_time hits MAX_ELAPSED_TIME.
-  static uint32_t start_time = millis();
-  uint32_t elapsed_time = millis() - start_time;
+  // A full cycle starts with time_since_cycle_start_ms at cycle_start_time_ms
+  // and goes until time_since_cycle_start_ms hits CYCLE_TIME_MS.
+  static uint32_t cycle_start_time_ms = millis();
+  static uint32_t last_frame_time_ms = 0;
+
+  uint32_t now_ms = millis();
+  // If it's not time for a new frame yet, then return.
+  if (now_ms - last_frame_time_ms < MSPF) return;
+  // Time for a new frame. Update the last frame time.
+  last_frame_time_ms = now_ms;
+  // Compute how far we are into the current display cycle.
+  uint32_t time_since_cycle_start_ms = now_ms - cycle_start_time_ms;
 
   // Fade the brightness of the whole display in and out to look sortof like
   // fluttering breathing.
@@ -88,7 +91,7 @@ void octopus_skin() {
   // blue near 255.
   static constexpr uint8_t MAX_VALUE = 175;
   static constexpr uint8_t MIN_VALUE = 25;
-  const float time_frac = elapsed_time / max_elapsed_time_f;
+  const float time_frac = time_since_cycle_start_ms / cycle_time_ms_f;
   const uint8_t value =
       MIN_VALUE +
       (MAX_VALUE - MIN_VALUE) * (0.5f * unit_sin(2.0f * TWO_PI * time_frac) +
@@ -100,10 +103,10 @@ void octopus_skin() {
   static constexpr int MAX_COL_TRAVEL_DIST = 48;
   const int row_idx_offset =
       MAX_ROW_TRAVEL_DIST *
-      unit_sin(TWO_PI * elapsed_time / max_elapsed_time_f);
+      unit_sin(TWO_PI * time_since_cycle_start_ms / cycle_time_ms_f);
   const int col_idx_offset =
       MAX_COL_TRAVEL_DIST *
-      unit_cos(TWO_PI * elapsed_time / max_elapsed_time_f);
+      unit_cos(TWO_PI * time_since_cycle_start_ms / cycle_time_ms_f);
 
   for (int led_idx = 0; led_idx < NUM_LEDS_FULL; ++led_idx) {
     // Get the 2D position (row and column) for this LED.
@@ -117,13 +120,15 @@ void octopus_skin() {
                               unit_sin(TWO_PI * col_idx / num_idxs_per_cycle)),
              256);
     // Set the LED color.
-    get_led(led_idx) = CHSV(get_color_corrected_hue(hue), 255, value);
+    get_led(led_idx) = CHSV(hue, 255, value);
   }
   FastLED.show();
-  delay(MSPF);
 
-  // If the elapsed time has hit the limit, then start over.
-  if (elapsed_time >= MAX_ELAPSED_TIME) start_time = millis();
+  // If we have gone through a full display cycle, then start over with a new
+  // cycle.
+  if (time_since_cycle_start_ms >= CYCLE_TIME_MS) {
+    cycle_start_time_ms = now_ms;
+  }
 }
 
 int get_hue_dist(uint8_t hue1, uint8_t hue2) {
@@ -138,9 +143,14 @@ void running_blocks() {
   static constexpr int MIN_ADJACENT_HUE_DIST = 50;
   static constexpr uint32_t MS_PER_SHIFT = 80;
 
-  auto get_random_hue = []() -> uint8_t {
-    return get_color_corrected_hue(random(0, 256));
-  };
+  static uint32_t last_frame_time_ms = 0;
+  uint32_t now_ms = millis();
+  // If it's not time for a new frame yet, then return.
+  if (now_ms - last_frame_time_ms < MS_PER_SHIFT) return;
+  // Time for a new frame. Update the last frame time.
+  last_frame_time_ms = now_ms;
+
+  auto get_random_hue = []() -> uint8_t { return random(0, 256); };
 
   // Use fixed-size arrays instead of vectors. Maintain a current count and
   // simple helpers to fill and erase the front element (shift-left).
@@ -200,9 +210,6 @@ void running_blocks() {
   render(leds_top, block_hues_top, block_shift);
   render(leds_bot, block_hues_bot, block_shift);
   FastLED.show();
-
-  // Wait before the next shift.
-  delay(MS_PER_SHIFT);
 }
 
 void color_sampler() {
@@ -222,6 +229,28 @@ void color_sampler() {
   FastLED.show();
 }
 
+void set_mode_from_serial() {
+  if (!Serial.available()) return;
+
+  String mode_str = Serial.readStringUntil('\n');
+  mode_str.trim();
+  mode_str.toUpperCase();
+
+  if (mode_str == "OCTOPUS_SKIN") {
+    current_mode = MODE_OCTOPUS_SKIN;
+    Serial.println("MODE: OCTOPUS SKIN");
+  } else if (mode_str == "BLOCKS") {
+    current_mode = MODE_RUNNING_BLOCKS;
+    Serial.println("MODE: RUNNING BLOCKS");
+  } else if (mode_str == "OFF") {
+    current_mode = MODE_OFF;
+    Serial.println("MODE: OFF");
+  } else {
+    Serial.print("UNKNOWN MODE: ");
+    Serial.println(mode_str);
+  }
+}
+
 void setup() {
   FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, BRG>(leds_top,
                                                              NUM_LEDS_HALF);
@@ -230,11 +259,30 @@ void setup() {
   FastLED.setBrightness(255);
   FastLED.clear();
   FastLED.show();
-
-  // color_sampler();
 }
 
 void loop() {
-  octopus_skin();
-  // running_blocks();
+  set_mode_from_serial();
+
+  switch (current_mode) {
+    case MODE_OCTOPUS_SKIN:
+      octopus_skin();
+      break;
+    case MODE_RUNNING_BLOCKS:
+      running_blocks();
+      break;
+    case MODE_OFF:
+      if (previous_mode != MODE_OFF) {
+        // Just switched to OFF mode. Clear the display.
+        FastLED.clear();
+        FastLED.show();
+      }
+      delay(100);
+      break;
+    default:
+      // Do nothing.
+      delay(100);
+      break;
+  }
+  previous_mode = current_mode;
 }
