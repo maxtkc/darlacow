@@ -48,7 +48,7 @@ use mpd::{Client,Song};
 /// Names of each of the relays
 /// Set these names to the names of the physical devices
 /// **Set them in the order that they are wired to the board**
-const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys", "Marque Lights",  "Masks",  "Center Lights",  "Disco", "LED Matrix Relay", "Rocket Lights", "BROKEN RELAY", "Launch", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
+const RELAYS: &'static [&'static str] = &["Cow Up", "Main Motion", "Strobe",  "Monkeys", "Marque Lights",  "Masks",  "Center Lights",  "Disco", "LED Matrix Relay", "Rocket Lights", "BROKEN RELAY", "Launch", "DARLA Letters", "Relay 14", "Relay 15", "Relay 16"];
 const RELAYS_DEFAULT: &'static [&'static str] = &["Relay 1", "Relay 2", "Relay 3", "Relay 4", "Relay 5", "Relay 6", "Relay 7", "Relay 8", "Relay 9", "Relay 10", "Relay 11", "Relay 12", "Relay 13", "Relay 14", "Relay 15", "Relay 16"];
 const MAIN_MOT_I: &'static &usize = & &1; // The index of main_motion in the RELAYS array
 const MAIN_MOT_SLEEP: &'static u64 = &200; // Main motion requires the on off thing (in milliseconds)
