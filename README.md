@@ -61,46 +61,47 @@ The Raspberry Pi (RPI) is hosting a web server which clients can connect to to e
     ```
     git pull
     ```
-  - Now, make your desired changes to the git repo files.
-  - Push your changes to the git repo (see official [GitHub instructions](https://docs.github.com/en/get-started/using-github/github-flow#make-changes) for more details):
+- Now, make your desired changes to the git repo files.
+- Push your changes to the git repo (see official [GitHub instructions](https://docs.github.com/en/get-started/using-github/github-flow#make-changes) for more details):
+  ```
+  git add --all
+  # Replace MESSAGE with a short description of the change you made.
+  git commit -m "MESSAGE"
+  # Your GitHub account will need write permissions to the Darla git repo in order to run this command.
+  git push
+  ```
+- Gain access to the Raspberry Pi via one of the following options:
+  - Option 1: Use SSH to gain remote terminal access to the Raspberry Pi.
+    - Run the SSH command from your developer machine terminal:
+      ```
+      ssh pi@darlacow.asuscomm.com
+      ```
+    - Type the password, if prompted.
+  - Option 2: Connect a monitor, keyboard, and mouse to the Raspberry Pi.
+    - A portable USB-C monitor, and a wireless keyboard+mouse combo are in Sam's Louis Armstrong room in a small Amazon box.
+- Pull your changes onto the Raspberry Pi:
+  - Navigate to the git repo and pull your changes:
     ```
-    git add --all
-    # Replace MESSAGE with a short description of the change you made.
-    git commit -m "MESSAGE"
-    # Your GitHub account will need write permissions to the Darla git repo in order to run this command.
-    git push
+    cd /home/pi/darlacow
+    git pull
     ```
-  - Gain access to the Raspberry Pi:
-    - Option 1: Use SSH to gain remote terminal access to the Raspberry Pi.
-      - Run the SSH command from your developer machine terminal:
-        ```
-        ssh pi@darlacow.asuscomm.com
-        ```
-      - Type the password, if prompted.
-    - Option 2: Connect a monitor, keyboard, and mouse to the Raspberry Pi.
-      - A portable USB-C monitor, and a wireless keyboard+mouse combo are in Sam's Louis Armstrong room in a small Amazon box.
-  - Pull your changes onto the Raspberry Pi:
-      - Navigate to the git repo and pull your changes:
-        ```
-        cd /home/pi/darlacow
-        git pull
-        ```
-      - Confirm that your changes have been pulled down. You should see your commit message from earlier at the top of the git log:
-        ```
-        git log
-        # Press Q or ESC once you have confirmed your commit is present in the log.
-        ```
-      - Build the code and install the new executable so that it will get run when the Raspberry Pi is booted:
-        ```
-        # This takes between 4 to 40 minutes, depending on how big your code change is:
-        ./scripts/build_and_install.sh
-        ```
-      - Reboot the Raspberry Pi so that the new code is used to launch the web server:
-        ```
-        sudo reboot
-        ```
-      - Give the Pi 1-3 minutes to reboot and start up the web server. You can check the web server logs on the Pi for any info or errors at `/home/pi/darlacow/server_logs`.
-      - Connect to Darla's web server on your phone or developer machine to see that your change is as-expected: http://darlacow.asuscomm.com/
+  - Confirm that your changes have been pulled down. You should see your commit message from earlier at the top of the git log:
+    ```
+    git log
+    # Press Q or ESC once you have confirmed your commit is present in the log.
+    ```
+- Build the code and install the new executable so that it will get run when the Raspberry Pi is booted:
+  ```
+  # This takes between 4 to 40 minutes, depending on how big your code change is:
+  ./scripts/build_and_install.sh
+  ```
+- Check that your code changes had the expected effect:
+  - Reboot the Raspberry Pi so that the new code is used to launch the web server:
+    ```
+    sudo reboot
+    ```
+  - Give the Pi 1-3 minutes to reboot and start up the web server. You can check the web server logs on the Pi for any info or errors at `/home/pi/darlacow/server_logs`.
+  - Connect to Darla's web server on your phone or developer machine to see that your change is as-expected: http://darlacow.asuscomm.com/
 
 
 ### Components
