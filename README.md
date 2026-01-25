@@ -30,9 +30,7 @@ _______________________
 
 The Raspberry Pi (RPI) is hosting a web server which clients can connect to to edit and play sequences. The RPI is running Raspbian Stretch lite (headless) and starts the server, a compiled executable, upon booting up. The executable is cross compiled from a machine with the Rust compiler installed.
 
-### Building
-
-How to build and install required software from scratch.
+### Initial Setup of Raspberry Pi
 
 - Required tools
   - Raspberry Pi
@@ -42,19 +40,68 @@ How to build and install required software from scratch.
   - [Download Raspbian](https://www.raspberrypi.org/downloads/raspbian/) (Lite, torrent or zip)
   - Use `lsblk` to find partition name and `dd` to write to disk. `if=~/Downloads/<file here> of=/dev/<partition name (sd_)>`
   - Add `ssh` file to the root of the boot partition of the install
-- Build the binary
-  - Install [Rust](https://rustup.rs/)
-  - Set up [cross compiling](https://github.com/japaric/rust-cross) for `armv7` (`gnueabihf` is good)
-    - Basically just install the gcc-for-arm-thingy, add the target, edit the config
-  - Clone the repo and `cd` into it
-  - `cargo build --target=armv7-unknown-linux-gnueabihf`
-  - Copy the files over
-    - `scp -r templates static target/armv7-unknown-linux-gnueabihf/debug/darlacow pi@<ip>:/home/pi/darlacow/`
-  - `ssh` to server and test run
-- Make it automatically run every time
-  - `sudo vim /etc/rc.local`
-  - Add between comment and exit 0
-    - `ROCKET_ENV=production cd /home/pi && ./darlacow`
+- Make the Raspberry Pi run the web server executable every time the Raspberry Pi boots up:
+  - On the Raspberry Pi, edit the file `/etc/rc.local` and add the following:
+    ```
+    # Log the date and time of the boot.
+    date >> /home/pi/darlacow/startup_logs
+    # Run Darla's web server executable and write the output to a log file.
+    /home/pi/darlacow/scripts/start_server.sh >> /home/pi/darlacow/startup_logs &
+    ```
+
+### How to Update the Webserver Code
+
+- On your developer machine (not Darla's Raspberry Pi), make sure you have the most up-to-date version of the Darla web server source code.
+  - Clone the git repository, if you have not already (see the official [GitHub instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) for more details):
+    ```
+    git clone https://github.com/maxtkc/darlacow.git
+    cd darlacow
+    ```
+  - Pull the latest git repo files
+    ```
+    git pull
+    ```
+  - Now, make your desired changes to the git repo files.
+  - Push your changes to the git repo (see official [GitHub instructions](https://docs.github.com/en/get-started/using-github/github-flow#make-changes) for more details):
+    ```
+    git add --all
+    # Replace MESSAGE with a short description of the change you made.
+    git commit -m "MESSAGE"
+    # Your GitHub account will need write permissions to the Darla git repo in order to run this command.
+    git push
+    ```
+  - Gain access to the Raspberry Pi:
+    - Option 1: Use SSH to gain remote terminal access to the Raspberry Pi.
+      - Run the SSH command from your developer machine terminal:
+        ```
+        ssh pi@darlacow.asuscomm.com
+        ```
+      - Type the password, if prompted.
+    - Option 2: Connect a monitor, keyboard, and mouse to the Raspberry Pi.
+      - A portable USB-C monitor, and a wireless keyboard+mouse combo are in Sam's Louis Armstrong room in a small Amazon box.
+  - Pull your changes onto the Raspberry Pi:
+      - Navigate to the git repo and pull your changes:
+        ```
+        cd /home/pi/darlacow
+        git pull
+        ```
+      - Confirm that your changes have been pulled down. You should see your commit message from earlier at the top of the git log:
+        ```
+        git log
+        # Press Q or ESC once you have confirmed your commit is present in the log.
+        ```
+      - Build the code and install the new executable so that it will get run when the Raspberry Pi is booted:
+        ```
+        # This takes between 4 to 40 minutes, depending on how big your code change is:
+        ./scripts/build_and_install.sh
+        ```
+      - Reboot the Raspberry Pi so that the new code is used to launch the web server:
+        ```
+        sudo reboot
+        ```
+      - Give the Pi 1-3 minutes to reboot and start up the web server. You can check the web server logs on the Pi for any info or errors at `/home/pi/darlacow/server_logs`.
+      - Connect to Darla's web server on your phone or developer machine to see that your change is as-expected: http://darlacow.asuscomm.com/
+
 
 ### Components
 

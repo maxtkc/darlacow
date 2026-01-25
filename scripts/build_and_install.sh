@@ -10,5 +10,6 @@ echo "... code has been successfully built."
 
 # Copy the binary to the main darlacow directory.
 echo "Installing darlacow binary..."
+rm ./darlacow || true
 cp target/debug/darlacow ./darlacow
 echo "... binary has been successfully installed."
