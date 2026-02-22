@@ -176,10 +176,14 @@ fn play(name: String) -> String {
         i2c.block_write(MCP23017_IODIRA, &[0, 0]).unwrap();
         println!("set relays to outputs");
 
-        // open serial port
+        // open secondary motion serial port
         let mut sec_mot_port = open_secondary_motion_serial_port();
         println!("opened serial port");
         sec_mot_port.write("S".as_bytes());
+
+        // Open LED matrix serial port.
+        let mut led_mat_port = open_led_matrix_serial_port();
+        println!("Opened led matrix serial port");
 
         println!("\n\nplaying data:\n{}\n", json);
         let mut i = 0;
