@@ -29,9 +29,9 @@
 CRGB leds_top[NUM_LEDS_HALF];
 CRGB leds_bot[NUM_LEDS_HALF];
 
-enum Mode { MODE_OFF, MODE_OCTOPUS, MODE_BLOCKS };
+enum Mode { MODE_UNSET, MODE_OFF, MODE_OCTOPUS, MODE_BLOCKS };
+Mode previous_mode = MODE_UNSET;
 Mode current_mode = MODE_OFF;
-Mode previous_mode = MODE_OFF;
 
 // Returns `val` wrapped to between 0 and `max` - 1.
 int wrap(int val, int max) {
@@ -252,7 +252,9 @@ void set_mode_from_serial() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  // Initialize serial ports. See https://www.pjrc.com/teensy/td_uart.html for
+  // Teensy serial pinouts.
+  Serial.begin(9600);   // Serial over USB.
 
   FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, BRG>(leds_top,
                                                              NUM_LEDS_HALF);
