@@ -401,7 +401,7 @@ fn secondary_motion(serial_val: String) -> String {
 fn led_matrix(serial_val: String) -> String {
     let mut led_matrix_port = open_led_matrix_serial_port();
     led_matrix_port.write(serial_val.as_bytes());
-    println!("Sent {} over serial for led matrix", serial_val)
+    format!("Sent {} over serial for led matrix", serial_val)
 }
 
 #[catch(404)]
