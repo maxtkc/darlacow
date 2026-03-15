@@ -15,10 +15,8 @@
 #define NUM_LEDS_FULL (NUM_ROWS_FULL * NUM_COLS)
 #define NUM_LEDS_HALF (NUM_ROWS_HALF * NUM_COLS)
 #define LED_TYPE LPD8806
-#define DATA_PIN_TOP 4
-#define CLOCK_PIN_TOP 2
-#define DATA_PIN_BOT 8
-#define CLOCK_PIN_BOT 6
+#define DATA_PIN 4
+#define CLOCK_PIN 2
 
 // Software configuration.
 #define FPS 60             // Frames per second.
@@ -26,10 +24,9 @@
 #define TWO_PI 2.0f * PI
 
 // Define the two sections of LEDs. One top and one bottom.
-CRGB leds_top[NUM_LEDS_HALF];
-CRGB leds_bot[NUM_LEDS_HALF];
+CRGB leds[NUM_LEDS_FULL];
 
-enum Mode { MODE_UNSET, MODE_OFF, MODE_OCTOPUS, MODE_BLOCKS };
+enum Mode { MODE_UNSET, MODE_OFF, MODE_OCTOPUS, MODE_BLOCKS, MODE_WHITE };
 Mode previous_mode = MODE_UNSET;
 Mode current_mode = MODE_OFF;
 
@@ -55,9 +52,7 @@ std::tuple<int, int> idx_2d_from_1d(int led_idx) {
 // color.
 CRGB& get_led(int led_idx) {
   assert(led_idx >= 0 && led_idx < NUM_LEDS_FULL);
-
-  if (led_idx < NUM_LEDS_HALF) return leds_top[led_idx];
-  return leds_bot[led_idx - NUM_LEDS_HALF];
+  return leds[led_idx];
 }
 
 // Sine and cosine functions that output in [0.0, 1.0] instead of [-1.0, 1.0].
@@ -174,8 +169,10 @@ void running_blocks() {
     }
   };
 
-  auto render = [](CRGB* leds, const BlockArray& block_hues, int block_shift) {
-    for (int led_idx = 0; led_idx < NUM_LEDS_HALF; ++led_idx) {
+  auto render = [](CRGB* leds, int led_offset, const BlockArray& block_hues,
+                   int block_shift) {
+    for (int led_idx = led_offset; led_idx < led_offset + NUM_LEDS_HALF;
+         ++led_idx) {
       const auto [row_idx, col_idx] = idx_2d_from_1d(led_idx);
       const int block_idx = (col_idx + block_shift) / BLOCK_SIZE;
       const uint8_t hue = block_hues[block_idx];
@@ -207,8 +204,15 @@ void running_blocks() {
   fill_block_hues(block_hues_top, block_hues_top_count);
   fill_block_hues(block_hues_bot, block_hues_bot_count);
 
-  render(leds_top, block_hues_top, block_shift);
-  render(leds_bot, block_hues_bot, block_shift);
+  render(leds, 0, block_hues_bot, block_shift);
+  render(leds, NUM_LEDS_HALF, block_hues_top, block_shift);
+  FastLED.show();
+}
+
+void white() {
+  for (int led_idx = 0; led_idx < NUM_LEDS_FULL; ++led_idx) {
+    get_led(led_idx) = CRGB::White;
+  }
   FastLED.show();
 }
 
@@ -242,6 +246,9 @@ void set_mode_from_serial() {
   } else if (mode_str == "BLOCKS") {
     current_mode = MODE_BLOCKS;
     Serial.println("MODE: BLOCKS");
+  } else if (mode_str == "WHITE") {
+    current_mode = MODE_WHITE;
+    Serial.println("MODE: WHITE");
   } else if (mode_str == "OFF") {
     current_mode = MODE_OFF;
     Serial.println("MODE: OFF");
@@ -254,12 +261,9 @@ void set_mode_from_serial() {
 void setup() {
   // Initialize serial ports. See https://www.pjrc.com/teensy/td_uart.html for
   // Teensy serial pinouts.
-  Serial.begin(9600);   // Serial over USB.
+  Serial.begin(9600);  // Serial over USB.
 
-  FastLED.addLeds<LPD8806, DATA_PIN_TOP, CLOCK_PIN_TOP, BRG>(leds_top,
-                                                             NUM_LEDS_HALF);
-  FastLED.addLeds<LPD8806, DATA_PIN_BOT, CLOCK_PIN_BOT, BRG>(leds_bot,
-                                                             NUM_LEDS_HALF);
+  FastLED.addLeds<LPD8806, DATA_PIN, CLOCK_PIN, BRG>(leds, NUM_LEDS_FULL);
   FastLED.setBrightness(255);
   FastLED.clear();
   FastLED.show();
@@ -275,17 +279,24 @@ void loop() {
     case MODE_BLOCKS:
       running_blocks();
       break;
+    case MODE_WHITE:
+      if (previous_mode != MODE_WHITE) {
+        // Just switched to WHITE mode. Fill the display with white.
+        white();
+      }
+      delay(MSPF);
+      break;
     case MODE_OFF:
       if (previous_mode != MODE_OFF) {
         // Just switched to OFF mode. Clear the display.
         FastLED.clear();
         FastLED.show();
       }
-      delay(100);
+      delay(MSPF);
       break;
     default:
       // Do nothing.
-      delay(100);
+      delay(MSPF);
       break;
   }
   previous_mode = current_mode;
