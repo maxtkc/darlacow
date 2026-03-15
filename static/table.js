@@ -43,7 +43,7 @@ columns:[
 {title:"{{name}}", field:"{{name}}", headerVertical:true, editor:"tickCross", formatter:"tickCross", editorParams:{indeterminateValue:"n/a"}, align:"center"},
 {% endfor %}
 {title:"Secondary<br>Motion", field:"sec_mot", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "in":"in", "out":"out"}}, align:"center"},
-{title:"LED Matrix", field:"led_matrix", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "off":"off", "octopus":"octopus", "blocks":"blocks"}}, align:"center"},
+{title:"LED Matrix", field:"led_matrix", editor:"select", headerVertical:true, editorParams:{values:{"none":"none", "off":"off", "octopus":"octopus", "blocks":"blocks", "white":"white"}}, align:"center"},
 ],
 });
 refresh();

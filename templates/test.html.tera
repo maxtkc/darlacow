@@ -23,6 +23,7 @@ Test
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_off">LED Matrix: Off</button>
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_octopus">LED Matrix: Octopus Skin</button>
         <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_blocks">LED Matrix: Running Blocks</button>
+        <button class="w3-button w3-round-large w3-black w3-hover-grey w3-block" id="led_matrix_white">LED Matrix: White</button>
     </div>
 </div>
     <script>
@@ -86,6 +87,11 @@ Test
     });
     $("#led_matrix_blocks").click(() => {
         $.get("/led_matrix/BLOCKS\n", (data, status) => {
+            console.log("Data: " + data + "\nStatus: " + status);
+        });
+    });
+    $("#led_matrix_white").click(() => {
+        $.get("/led_matrix/WHITE\n", (data, status) => {
             console.log("Data: " + data + "\nStatus: " + status);
         });
     });

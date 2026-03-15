@@ -234,6 +234,8 @@ fn play(name: String) -> String {
                 led_mat_port.write_all("OCTOPUS\n".as_bytes());
             } else if led_matrix == "blocks" {
                 led_mat_port.write_all("BLOCKS\n".as_bytes());
+            } else if led_matrix == "white" {
+                led_mat_port.write_all("WHITE\n".as_bytes());
             }
 
             // wait
